@@ -1,8 +1,6 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const E2E_DIR = path.dirname(fileURLToPath(import.meta.url));
-export const PULSEVIEW_ROOT = path.resolve(E2E_DIR, '../..');
+const PULSEVIEW_ROOT = process.cwd();
 export const TEST_MCAP_PATH =
   process.env.PULSEVIEW_TEST_MCAP ?? path.resolve(PULSEVIEW_ROOT, '../test2/test2_0.mcap');
 

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { Layout, Menu, Spin } from 'antd';
-import { DatabaseOutlined, LineChartOutlined } from '@ant-design/icons';
+import { DatabaseOutlined, FundOutlined, LineChartOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import { getDatasources } from '@/services/datasource';
 import type { Datasource } from '@/types';
@@ -55,7 +55,10 @@ export default function AppLayout({ children }: Props) {
     <AppContext.Provider value={{ datasources, reloadDatasources, defaultDatasource }}>
       <Layout className='app-layout'>
         <Sider width={200} theme='light' className='app-sider'>
-          <div className='logo'>PV Monitor</div>
+          <div className='logo'>
+            <FundOutlined className='logo-icon' />
+            <span>PulseView</span>
+          </div>
           <Menu mode='inline' selectedKeys={[selectedKey]}>
             <Menu.Item key='/explorer' icon={<LineChartOutlined />}>
               <Link to='/explorer'>指标探索</Link>

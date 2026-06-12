@@ -21,9 +21,9 @@ test.describe('Explorer UI', () => {
     await expect(page.getByText('统计（全部数据）')).toBeVisible();
   });
 
-  test('runs node pub hz preset and shows multi-series legend', async ({ page }) => {
+  test('runs node sub hz preset and shows multi-series legend', async ({ page }) => {
     await page.goto('/explorer');
-    await page.getByRole('button', { name: 'Node Pub Hz' }).click();
+    await page.getByRole('button', { name: 'Node Sub Hz' }).click();
     await page.getByRole('button', { name: '查询' }).click();
 
     await expect(page.locator('.uplot')).toBeVisible({ timeout: 20_000 });
@@ -34,7 +34,7 @@ test.describe('Explorer UI', () => {
 
   test('toggles legend visibility and updates stats table', async ({ page }) => {
     await page.goto('/explorer');
-    await page.getByRole('button', { name: 'Node Pub Hz' }).click();
+    await page.getByRole('button', { name: 'Node Sub Hz' }).click();
     await page.getByRole('button', { name: '查询' }).click();
     await expect(page.locator('.timeseries-stats-table tbody tr').first()).toBeVisible({
       timeout: 20_000,

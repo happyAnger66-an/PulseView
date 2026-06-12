@@ -2,9 +2,10 @@
   "name": "pulseview",
   "private": true,
   "scripts": {
-    "test:e2e": "playwright test -c e2e/playwright.config.ts",
-    "test:e2e:ui": "playwright test -c e2e/playwright.config.ts --ui",
-    "test:backend": "cd backend && python -m pytest tests -q"
+    "test:e2e": "playwright test -c e2e/playwright.config.cjs",
+    "test:e2e:ui": "playwright test -c e2e/playwright.config.cjs --ui",
+    "test:backend": "cd backend && python -m pytest tests -q",
+    "postinstall": "playwright install chromium"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1"

@@ -54,14 +54,14 @@ test.describe('Backend API', () => {
     expect(result.meta.row_count).toBeGreaterThan(0);
   });
 
-  test('runs dimension sql query for node pub hz', async ({ request }) => {
+  test('runs dimension sql query for node sub hz', async ({ request }) => {
     const ds = await seedReadyDatasource(request);
     const result = await runSqlQuery(
       request,
       ds.id,
       `SELECT s._time, p.node, p.topic, p.hz
        FROM system_stats s
-       JOIN system_stats_node_pub_stats p ON p.msg_id = s.msg_id
+       JOIN system_stats_node_sub_stats p ON p.msg_id = s.msg_id
        ORDER BY s._time, p.node, p.topic`,
     );
     expect(result.meta.dimension_columns).toEqual(['node', 'topic']);

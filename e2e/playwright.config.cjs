@@ -1,12 +1,11 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { defineConfig } from '@playwright/test';
+const path = require('node:path');
+const { defineConfig } = require('@playwright/test');
 
-const E2E_DIR = path.dirname(fileURLToPath(import.meta.url));
+const E2E_DIR = __dirname;
 const PULSEVIEW_ROOT = path.resolve(E2E_DIR, '..');
 const TEST_DATA_DIR = path.join(E2E_DIR, '.data');
 
-export default defineConfig({
+module.exports = defineConfig({
   testDir: './tests',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
@@ -16,7 +15,7 @@ export default defineConfig({
   timeout: 120_000,
   expect: { timeout: 15_000 },
   use: {
-    baseURL: process.env.PULSEVIEW_WEB_BASE ?? 'http://127.0.0.1:8766',
+    baseURL: process.env.PULSEVIEW_WEB_BASE ?? 'http://127.0.0.1:8767',
     trace: 'on-first-retry',
   },
   webServer: [
@@ -28,18 +27,18 @@ export default defineConfig({
         PULSEVIEW_DATA_DIR: TEST_DATA_DIR,
       },
       url: 'http://127.0.0.1:8080/api/datasource/plugins',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 60_000,
     },
     {
-      command: 'npm run dev',
+      command: 'npx vite --port 8767 --host',
       cwd: path.join(PULSEVIEW_ROOT, 'fronted'),
       env: {
         ...process.env,
         PROXY: 'http://127.0.0.1:8080',
       },
-      url: 'http://127.0.0.1:8766',
-      reuseExistingServer: !process.env.CI,
+      url: 'http://127.0.0.1:8767',
+      reuseExistingServer: false,
       timeout: 60_000,
     },
   ],

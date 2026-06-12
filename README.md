@@ -83,7 +83,7 @@ python3 -m venv .venv
 ```bash
 # 项目根目录
 npm install
-npx playwright install chromium
+npx playwright install chromium   # postinstall 已包含，首次需联网
 npm run test:e2e
 ```
 

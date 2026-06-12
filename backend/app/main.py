@@ -26,11 +26,24 @@ app.add_middleware(
 
 
 def ok(data: Any = None) -> ApiResponse:
+    """包装 API 成功响应为统一格式 ``{dat, err}``。
+
+    Args:
+        data: 业务数据，可为任意 JSON 可序列化对象。
+
+    Returns:
+        ``ApiResponse``，``err`` 为空字符串。
+    """
     return ApiResponse(dat=data)
 
 
 @app.get("/api/datasource/plugins")
 def list_plugins():
+    """列出支持的数据源插件类型及元信息。
+
+    Returns:
+        ``ApiResponse``，``dat`` 为插件列表（含 ``plugin_type``、``plugin_type_name``、``category``）。
+    """
     return ok(
         [
             {"plugin_type": k, **v}
@@ -41,11 +54,24 @@ def list_plugins():
 
 @app.get("/api/datasources")
 def list_datasources():
+    """列出全部已配置数据源。
+
+    Returns:
+        ``ApiResponse``，``dat`` 为数据源对象数组。
+    """
     return ok(store.list())
 
 
 @app.post("/api/datasources")
 def create_datasource(body: DatasourceCreate):
+    """创建数据源；ros2_mcap 类型会自动触发首次 ingest。
+
+    Args:
+        body: 数据源名称、插件类型、settings 等创建参数。
+
+    Returns:
+        ``ApiResponse``，``dat`` 为创建后的数据源对象（含 ingest 状态）。
+    """
     item = store.create(body.model_dump())
     if body.plugin_type == "ros2_mcap":
         _try_ingest(item["id"])
@@ -55,6 +81,17 @@ def create_datasource(body: DatasourceCreate):
 
 @app.get("/api/datasources/{ds_id}")
 def get_datasource(ds_id: int):
+    """按 ID 获取单个数据源。
+
+    Args:
+        ds_id: 数据源 ID。
+
+    Returns:
+        ``ApiResponse``，``dat`` 为数据源对象。
+
+    Raises:
+        HTTPException: 404，数据源不存在。
+    """
     item = store.get(ds_id)
     if not item:
         raise HTTPException(status_code=404, detail="not found")
@@ -63,6 +100,18 @@ def get_datasource(ds_id: int):
 
 @app.put("/api/datasources/{ds_id}")
 def update_datasource(ds_id: int, body: DatasourceUpdate):
+    """更新数据源配置；ros2_mcap 类型会重新尝试 ingest。
+
+    Args:
+        ds_id: 数据源 ID。
+        body: 待更新的字段（name、description、settings 等，仅传非空字段）。
+
+    Returns:
+        ``ApiResponse``，``dat`` 为更新后的数据源对象。
+
+    Raises:
+        HTTPException: 404，数据源不存在。
+    """
     try:
         item = store.update(ds_id, body.model_dump(exclude_none=True))
     except KeyError:
@@ -75,12 +124,31 @@ def update_datasource(ds_id: int, body: DatasourceUpdate):
 
 @app.delete("/api/datasources/{ds_id}")
 def delete_datasource(ds_id: int):
+    """删除数据源及其关联 DuckDB 文件。
+
+    Args:
+        ds_id: 数据源 ID。
+
+    Returns:
+        ``ApiResponse``，``dat`` 为 ``"ok"``。
+    """
     store.delete(ds_id)
     return ok("ok")
 
 
 @app.get("/api/mcap/inspect")
 def mcap_inspect(path: str = Query(...)):
+    """扫描 MCAP 文件，返回 topic 列表及消息类型、条数。
+
+    Args:
+        path: MCAP 文件绝对路径。
+
+    Returns:
+        ``ApiResponse``，``dat`` 含 ``topics`` 数组。
+
+    Raises:
+        HTTPException: 404，文件不存在。
+    """
     try:
         return ok(inspect_mcap(path))
     except FileNotFoundError as e:
@@ -89,6 +157,18 @@ def mcap_inspect(path: str = Query(...)):
 
 @app.post("/api/datasources/{ds_id}/ingest")
 def ingest_datasource(ds_id: int, body: IngestRequest | None = None):
+    """手动触发 ros2_mcap 数据源的 MCAP 导入。
+
+    Args:
+        ds_id: 数据源 ID。
+        body: 可选；``force=True`` 时强制重新导入。
+
+    Returns:
+        ``ApiResponse``，``dat`` 为 ingest 结果（status、messages_decoded 等）。
+
+    Raises:
+        HTTPException: 404 数据源不存在；400 非 ros2_mcap 类型。
+    """
     item = store.get(ds_id)
     if not item:
         raise HTTPException(status_code=404, detail="not found")
@@ -100,6 +180,17 @@ def ingest_datasource(ds_id: int, body: IngestRequest | None = None):
 
 @app.get("/api/datasources/{ds_id}/schema")
 def datasource_schema(ds_id: int):
+    """返回数据源 DuckDB 表结构及 Adapter 元数据（dimension_keys 等）。
+
+    Args:
+        ds_id: 数据源 ID。
+
+    Returns:
+        ``ApiResponse``，``dat`` 含 ``tables`` 数组；非 ros2_mcap 返回空表列表。
+
+    Raises:
+        HTTPException: 404，数据源不存在。
+    """
     item = store.get(ds_id)
     if not item:
         raise HTTPException(status_code=404, detail="not found")
@@ -111,6 +202,17 @@ def datasource_schema(ds_id: int):
 
 @app.post("/api/sql/query")
 def sql_query(body: SqlQueryRequest):
+    """对 ros2_mcap 数据源的 DuckDB 执行 SELECT 查询。
+
+    Args:
+        body: 含 ``datasource_id``、``sql``、``limit``（默认 1000）。
+
+    Returns:
+        ``ApiResponse``，``dat`` 含 ``columns``、``rows``、``meta``（时间/维度/数值列推断）。
+
+    Raises:
+        HTTPException: 404 数据源不存在；400 非 ros2_mcap、DuckDB 未就绪或 SQL 非法。
+    """
     item = store.get(body.datasource_id)
     if not item:
         raise HTTPException(status_code=404, detail="datasource not found")
@@ -126,6 +228,14 @@ def sql_query(body: SqlQueryRequest):
 
 @app.post("/api/query_range")
 def promql_query_range(body: dict[str, Any]):
+    """Prometheus 兼容的 query_range 占位接口，返回模拟时序数据。
+
+    Args:
+        body: 含 ``query``、``start``、``end``、``step``（均为可选，有默认值）。
+
+    Returns:
+        ``ApiResponse``，``dat`` 为 Prometheus matrix 格式（status、data.result）。
+    """
     query = body.get("query", "up")
     start = int(body.get("start", time.time() - 3600))
     end = int(body.get("end", time.time()))
@@ -149,6 +259,15 @@ def promql_query_range(body: dict[str, Any]):
 
 
 def _try_ingest(ds_id: int, force: bool = False) -> dict[str, Any]:
+    """对 ros2_mcap 数据源执行 MCAP → DuckDB 导入，并更新 ingest 状态。
+
+    Args:
+        ds_id: 数据源 ID。
+        force: 为 True 时忽略已有 DuckDB 文件并重新导入；为 False 时若已 ready 则跳过。
+
+    Returns:
+        导入结果摘要（含 status、messages_decoded 等）；非 ros2_mcap 或数据源不存在时返回空 dict。
+    """
     item = store.get(ds_id)
     if not item or item["plugin_type"] != "ros2_mcap":
         return {}
