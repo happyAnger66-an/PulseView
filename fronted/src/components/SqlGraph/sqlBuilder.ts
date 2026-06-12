@@ -1,22 +1,15 @@
 import type { SchemaTable } from '@/types';
 
 const MAIN_TABLE = 'system_stats';
-const SKIP_CHART_COLUMNS = new Set(['msg_id', 'idx', 'seq']);
-
-const LABEL_COLUMNS = ['name', 'cpu_name', 'mount_point', 'node', 'topic'];
-
-export function isNumericColumnType(type: string): boolean {
-  const upper = type.toUpperCase();
-  return ['INT', 'FLOAT', 'DOUBLE', 'DECIMAL', 'REAL', 'UINT', 'HUGE'].some((k) => upper.includes(k));
-}
 
 function getTableAlias(tableName: string): string {
   const part = tableName.replace(/^system_stats_?/, '') || 'main';
   return part.charAt(0) || 't';
 }
 
-function findLabelColumn(table: SchemaTable): string | undefined {
-  return table.columns.find((c) => LABEL_COLUMNS.includes(c.name))?.name;
+function orderByClause(alias: string, dims: string[], timeCol = 's._time'): string {
+  const parts = [timeCol, ...dims.map((d) => `${alias}.${d}`)];
+  return `ORDER BY ${parts.join(', ')}`;
 }
 
 /** 根据 Schema 字段点击生成 SQL */
@@ -35,21 +28,20 @@ export function buildSqlFromField(
     if (columnName === '_time') {
       return `SELECT _time FROM ${MAIN_TABLE} ORDER BY _time`;
     }
-    if (SKIP_CHART_COLUMNS.has(columnName)) {
-      return `SELECT _time, ${columnName} FROM ${MAIN_TABLE} ORDER BY _time`;
-    }
     return `SELECT _time, ${columnName} FROM ${MAIN_TABLE} ORDER BY _time`;
   }
 
   const alias = getTableAlias(tableName);
-  const labelCol = findLabelColumn(table);
+  const dims = table.dimension_keys ?? [];
+  const dimSelect = dims.map((d) => `${alias}.${d}`).join(', ');
   const isNumeric = isNumericColumnType(columnType);
 
-  if (isNumeric && labelCol && columnName !== labelCol) {
-    return `SELECT s._time, ${alias}.${labelCol}, ${alias}.${columnName}
+  if (isNumeric && dims.length && !dims.includes(columnName)) {
+    const selectDims = dimSelect ? `, ${dimSelect}` : '';
+    return `SELECT s._time${selectDims}, ${alias}.${columnName}
 FROM ${MAIN_TABLE} s
 JOIN ${tableName} ${alias} ON ${alias}.msg_id = s.msg_id
-ORDER BY s._time, ${alias}.${labelCol}`;
+${orderByClause(alias, dims)}`;
   }
 
   if (columnName === '_time') {
@@ -76,10 +68,13 @@ export function buildSqlFromTable(tableName: string, schema: SchemaTable[]): str
   }
 
   const alias = getTableAlias(tableName);
+  const dims = table.dimension_keys ?? [];
+  const order = dims.length ? orderByClause(alias, dims) : 'ORDER BY s._time';
+
   return `SELECT s._time, ${alias}.*
 FROM ${MAIN_TABLE} s
 JOIN ${tableName} ${alias} ON ${alias}.msg_id = s.msg_id
-ORDER BY s._time
+${order}
 LIMIT 100`;
 }
 
@@ -88,4 +83,29 @@ export function parseSchemaTreeKey(key: string): { table: string; column?: strin
   const dot = key.indexOf('.');
   if (dot === -1) return { table: key };
   return { table: key.slice(0, dot), column: key.slice(dot + 1) };
+}
+
+export function isNumericColumnType(type: string): boolean {
+  const upper = type.toUpperCase();
+  return ['INT', 'FLOAT', 'DOUBLE', 'DECIMAL', 'REAL', 'UINT', 'HUGE'].some((k) => upper.includes(k));
+}
+
+/** 根据表元数据生成默认指标查询 */
+export function buildDefaultMetricSql(table: SchemaTable, metric?: string): string | null {
+  const metrics = table.default_metrics ?? [];
+  const target = metric ?? metrics[0];
+  if (!target) return null;
+
+  if (!table.parent_table) {
+    return `SELECT _time, ${target} FROM ${table.name} ORDER BY _time`;
+  }
+
+  const alias = getTableAlias(table.name);
+  const dims = table.dimension_keys ?? [];
+  const dimSelect = dims.length ? `, ${dims.map((d) => `${alias}.${d}`).join(', ')}` : '';
+
+  return `SELECT s._time${dimSelect}, ${alias}.${target}
+FROM ${MAIN_TABLE} s
+JOIN ${table.name} ${alias} ON ${alias}.msg_id = s.msg_id
+${orderByClause(alias, dims)}`;
 }

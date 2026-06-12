@@ -1,0 +1,12 @@
+{
+  "name": "pulseview",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test -c e2e/playwright.config.ts",
+    "test:e2e:ui": "playwright test -c e2e/playwright.config.ts --ui",
+    "test:backend": "cd backend && python -m pytest tests -q"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1"
+  }
+}

@@ -8,6 +8,7 @@ import SqlTimeseriesChart from './SqlTimeseriesChart';
 import {
   buildSqlFromField,
   buildSqlFromTable,
+  buildDefaultMetricSql,
   parseSchemaTreeKey,
 } from './sqlBuilder';
 import './style.less';
@@ -21,19 +22,28 @@ const PRESET_QUERIES = [
   },
   {
     label: 'GPU 利用率',
-    sql: `SELECT s._time, g.name, g.gpu_usage
-FROM system_stats s
-JOIN system_stats_gpu_stats g ON g.msg_id = s.msg_id
-ORDER BY s._time, g.name`,
+    table: 'system_stats_gpu_stats',
+    metric: 'gpu_usage',
   },
   {
-    label: '进程 CPU Top',
-    sql: `SELECT s._time, p.name, p.pid, p.cpu_used_percent
-FROM system_stats s
-JOIN system_stats_proc_stats p ON p.msg_id = s.msg_id
-ORDER BY s._time DESC, p.cpu_used_percent DESC`,
+    label: 'Node Pub Hz',
+    table: 'system_stats_node_pub_stats',
+    metric: 'hz',
   },
-];
+  {
+    label: 'Node Sub Hz',
+    table: 'system_stats_node_sub_stats',
+    metric: 'hz',
+  },
+  {
+    label: 'Node Sub IPC',
+    table: 'system_stats_node_sub_stats',
+    metric: 'avg_ipc',
+  },
+] as const;
+
+const DEFAULT_SQL =
+  'SELECT _time, cpu_used_percent, mem_used_percent FROM system_stats ORDER BY _time';
 
 interface Props {
   datasourceId: number;
@@ -42,7 +52,7 @@ interface Props {
 }
 
 export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Props) {
-  const [sql, setSql] = useState(PRESET_QUERIES[0].sql);
+  const [sql, setSql] = useState<string>(DEFAULT_SQL);
   const [loading, setLoading] = useState(false);
   const [reingesting, setReingesting] = useState(false);
   const [error, setError] = useState('');
@@ -157,18 +167,30 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
           {ingestError ? <Alert type='error' showIcon message={ingestError} /> : null}
         </Space>
         <Space wrap>
-          {PRESET_QUERIES.map((q) => (
-            <Button
-              key={q.label}
-              size='small'
-              onClick={() => {
-                setSql(q.sql);
-                executeQuery(q.sql);
-              }}
-            >
-              {q.label}
-            </Button>
-          ))}
+          {PRESET_QUERIES.map((q) => {
+            const sql =
+              'sql' in q
+                ? q.sql
+                : buildDefaultMetricSql(
+                    schema.find((t) => t.name === q.table) ?? { name: q.table, columns: [] },
+                    q.metric,
+                  ) ?? '';
+            return (
+              <Button
+                key={q.label}
+                size='small'
+                disabled={!('sql' in q) && !schema.some((t) => t.name === q.table)}
+                onClick={() => {
+                  if (sql) {
+                    setSql(sql);
+                    executeQuery(sql);
+                  }
+                }}
+              >
+                {q.label}
+              </Button>
+            );
+          })}
         </Space>
       </div>
 
@@ -218,6 +240,7 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
                   columns={result.columns}
                   rows={result.rows}
                   timeColumn={result.meta.time_column}
+                  dimensionColumns={result.meta.dimension_columns}
                   valueColumns={result.meta.value_columns}
                 />
               ) : (

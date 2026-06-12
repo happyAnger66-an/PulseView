@@ -1,0 +1,128 @@
+.timeseries-panel-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeseries-panel {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.timeseries-panel-chart {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.timeseries-panel-chart .uplot {
+  width: 100% !important;
+}
+
+.timeseries-panel-legend {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #f0f0f0;
+  padding-left: 12px;
+  max-height: 100%;
+}
+
+.timeseries-panel-legend-actions {
+  margin-bottom: 8px;
+  flex-shrink: 0;
+
+  .ant-btn {
+    padding: 0 4px;
+    height: auto;
+    font-size: 12px;
+  }
+}
+
+.timeseries-legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.timeseries-legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.88);
+
+  &:hover {
+    color: #6c53b1;
+  }
+
+  &.is-hidden {
+    opacity: 0.45;
+
+    .timeseries-legend-label {
+      text-decoration: line-through;
+    }
+
+    .timeseries-legend-marker {
+      background: #d9d9d9 !important;
+    }
+  }
+}
+
+.timeseries-legend-marker {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.timeseries-legend-label {
+  flex: 1;
+  min-width: 0;
+  word-break: break-all;
+  white-space: normal;
+}
+
+.timeseries-stats-section {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+}
+
+.timeseries-stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.timeseries-stats-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.timeseries-stats-hint {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.timeseries-stats-table {
+  .ant-table {
+    font-size: 12px;
+  }
+}

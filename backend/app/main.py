@@ -105,7 +105,8 @@ def datasource_schema(ds_id: int):
         raise HTTPException(status_code=404, detail="not found")
     if item["plugin_type"] != "ros2_mcap":
         return ok({"tables": []})
-    return ok(get_schema(store.duckdb_path(ds_id)))
+    msg_type = item.get("settings", {}).get("mcap.msg_type")
+    return ok(get_schema(store.duckdb_path(ds_id), msg_type))
 
 
 @app.post("/api/sql/query")

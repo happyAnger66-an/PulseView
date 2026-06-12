@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+_DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+DATA_DIR = Path(os.environ.get("PULSEVIEW_DATA_DIR", str(_DEFAULT_DATA_DIR)))
 META_FILE = DATA_DIR / "datasources.json"
 DUCKDB_DIR = DATA_DIR / "duckdb"
 

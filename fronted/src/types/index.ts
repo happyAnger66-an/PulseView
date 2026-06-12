@@ -64,6 +64,10 @@ export interface McapTopic {
 export interface SchemaTable {
   name: string;
   columns: { name: string; type: string }[];
+  parent_table?: string;
+  join_key?: string;
+  dimension_keys?: string[];
+  default_metrics?: string[];
 }
 
 export interface SqlQueryResult {
@@ -71,6 +75,7 @@ export interface SqlQueryResult {
   rows: unknown[][];
   meta: {
     time_column?: string;
+    dimension_columns?: string[];
     value_columns?: string[];
     row_count: number;
   };

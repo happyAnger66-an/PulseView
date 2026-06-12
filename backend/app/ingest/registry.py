@@ -14,6 +14,10 @@ class ColumnDef:
 class TableDef:
     name: str
     columns: list[ColumnDef]
+    parent_table: str | None = None
+    join_key: str = "msg_id"
+    dimension_keys: list[str] = field(default_factory=list)
+    default_metrics: list[str] = field(default_factory=list)
 
 
 @dataclass

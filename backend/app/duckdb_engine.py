@@ -5,10 +5,41 @@ from typing import Any
 
 import duckdb
 
+from app.ingest.registry import registry
 
-def get_schema(db_path: Path) -> dict[str, Any]:
+SKIP_VALUE_COLUMNS = frozenset({"msg_id", "idx", "seq"})
+SKIP_VALUE_SUFFIXES = ("_ts",)
+KNOWN_DIMENSION_COLUMNS = frozenset({
+    "node",
+    "topic",
+    "name",
+    "cpu_name",
+    "mount_point",
+    "pid",
+    "status",
+    "frame_id",
+    "hostname",
+    "vin",
+})
+
+
+def get_schema(db_path: Path, msg_type: str | None = None) -> dict[str, Any]:
     if not db_path.exists():
         return {"tables": []}
+
+    adapter_meta: dict[str, dict[str, Any]] = {}
+    if msg_type:
+        try:
+            adapter = registry.get(msg_type)
+            for table in adapter.tables():
+                adapter_meta[table.name] = {
+                    "parent_table": table.parent_table,
+                    "join_key": table.join_key,
+                    "dimension_keys": table.dimension_keys,
+                    "default_metrics": table.default_metrics,
+                }
+        except KeyError:
+            pass
 
     conn = duckdb.connect(str(db_path), read_only=True)
     try:
@@ -18,12 +49,12 @@ def get_schema(db_path: Path) -> dict[str, Any]:
         result = []
         for (table_name,) in tables:
             cols = conn.execute(f"PRAGMA table_info('{table_name}')").fetchall()
-            result.append(
-                {
-                    "name": table_name,
-                    "columns": [{"name": c[1], "type": c[2]} for c in cols],
-                }
-            )
+            entry: dict[str, Any] = {
+                "name": table_name,
+                "columns": [{"name": c[1], "type": c[2]} for c in cols],
+            }
+            entry.update(adapter_meta.get(table_name, {}))
+            result.append(entry)
         return {"tables": result}
     finally:
         conn.close()
@@ -44,14 +75,14 @@ def run_query(db_path: Path, sql: str, limit: int = 1000) -> dict[str, Any]:
         columns = [d[0] for d in cur.description]
         rows = cur.fetchall()
 
-        time_column = _detect_time_column(columns)
-        value_columns = [c for c in columns if c != time_column and _looks_numeric(rows, columns.index(c))]
+        time_column, dimension_columns, value_columns = _infer_columns(columns, rows)
 
         return {
             "columns": columns,
             "rows": [_serialize_row(row) for row in rows],
             "meta": {
                 "time_column": time_column,
+                "dimension_columns": dimension_columns,
                 "value_columns": value_columns,
                 "row_count": len(rows),
             },
@@ -60,19 +91,33 @@ def run_query(db_path: Path, sql: str, limit: int = 1000) -> dict[str, Any]:
         conn.close()
 
 
+def _infer_columns(
+    columns: list[str],
+    rows: list[tuple],
+) -> tuple[str | None, list[str], list[str]]:
+    time_column = _detect_time_column(columns)
+    dimension_columns: list[str] = []
+    value_columns: list[str] = []
+
+    for col in columns:
+        if col == time_column or col in SKIP_VALUE_COLUMNS:
+            continue
+        idx = columns.index(col)
+        if col in KNOWN_DIMENSION_COLUMNS or not _looks_numeric(rows, idx):
+            dimension_columns.append(col)
+        elif col.endswith(SKIP_VALUE_SUFFIXES):
+            continue
+        else:
+            value_columns.append(col)
+
+    return time_column, dimension_columns, value_columns
+
+
 def _detect_time_column(columns: list[str]) -> str | None:
     for candidate in ("_time", "time", "timestamp", "ts"):
         if candidate in columns:
             return candidate
     return None
-
-
-def _time_to_chart_value(val: Any) -> Any:
-    if val is None:
-        return None
-    if isinstance(val, (int, float)) and val > 1e12:
-        return float(val) / 1_000_000
-    return val
 
 
 def _looks_numeric(rows: list[tuple], idx: int) -> bool:

@@ -61,6 +61,7 @@ class SystemStatsAdapter:
                     ColumnDef("mem_total_size", "FLOAT"),
                     ColumnDef("mem_used_percent", "FLOAT"),
                 ],
+                default_metrics=["cpu_used_percent", "mem_used_percent"],
             ),
             TableDef(
                 "system_stats_cpu_stats",
@@ -73,6 +74,9 @@ class SystemStatsAdapter:
                     ColumnDef("cpu_sys_percent", "FLOAT"),
                     ColumnDef("cpu_idle_percent", "FLOAT"),
                 ],
+                parent_table="system_stats",
+                dimension_keys=["cpu_name"],
+                default_metrics=["cpu_percent", "cpu_user_percent", "cpu_sys_percent", "cpu_idle_percent"],
             ),
             TableDef(
                 "system_stats_gpu_stats",
@@ -82,6 +86,9 @@ class SystemStatsAdapter:
                     ColumnDef("name", "VARCHAR"),
                     ColumnDef("gpu_usage", "FLOAT"),
                 ],
+                parent_table="system_stats",
+                dimension_keys=["name"],
+                default_metrics=["gpu_usage"],
             ),
             TableDef(
                 "system_stats_proc_stats",
@@ -94,6 +101,9 @@ class SystemStatsAdapter:
                     ColumnDef("mem_used_percent", "FLOAT"),
                     ColumnDef("status", "VARCHAR"),
                 ],
+                parent_table="system_stats",
+                dimension_keys=["name", "pid"],
+                default_metrics=["cpu_used_percent", "mem_used_percent"],
             ),
             TableDef(
                 "system_stats_net_stats",
@@ -105,6 +115,9 @@ class SystemStatsAdapter:
                     ColumnDef("rcv_rate", "FLOAT"),
                     ColumnDef("status", "VARCHAR"),
                 ],
+                parent_table="system_stats",
+                dimension_keys=["name"],
+                default_metrics=["send_rate", "rcv_rate"],
             ),
             TableDef(
                 "system_stats_filesystem_stats",
@@ -117,6 +130,9 @@ class SystemStatsAdapter:
                     ColumnDef("used", "FLOAT"),
                     ColumnDef("free", "FLOAT"),
                 ],
+                parent_table="system_stats",
+                dimension_keys=["mount_point"],
+                default_metrics=["used_percent", "total", "used", "free"],
             ),
             TableDef(
                 "system_stats_mem_detail_stat",
@@ -128,6 +144,8 @@ class SystemStatsAdapter:
                     ColumnDef("mapped", "FLOAT"),
                     ColumnDef("anon_pages", "FLOAT"),
                 ],
+                parent_table="system_stats",
+                default_metrics=["active", "inactive", "dirty", "mapped", "anon_pages"],
             ),
             TableDef(
                 "system_stats_node_pub_stats",
@@ -149,6 +167,9 @@ class SystemStatsAdapter:
                     ColumnDef("max_proc_delta_ts", "BIGINT"),
                     ColumnDef("data_ts", "BIGINT"),
                 ],
+                parent_table="system_stats",
+                dimension_keys=["node", "topic"],
+                default_metrics=["hz", "avg_delta", "avg_proc_delta"],
             ),
             TableDef(
                 "system_stats_node_sub_stats",
@@ -180,6 +201,9 @@ class SystemStatsAdapter:
                     ColumnDef("min_ipc_ts", "BIGINT"),
                     ColumnDef("max_ipc_ts", "BIGINT"),
                 ],
+                parent_table="system_stats",
+                dimension_keys=["node", "topic"],
+                default_metrics=["hz", "avg_delta", "avg_sched_delta", "avg_ipc"],
             ),
         ]
 
