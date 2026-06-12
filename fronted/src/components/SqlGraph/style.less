@@ -1,0 +1,73 @@
+.sql-graph {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sql-graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sql-graph-body {
+  display: flex;
+  gap: 16px;
+  min-height: 480px;
+}
+
+.sql-graph-schema {
+  width: 260px;
+  flex-shrink: 0;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafafa;
+  overflow: auto;
+}
+
+.schema-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.sql-graph-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.sql-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.sql-input {
+  flex: 1;
+  font-family: Menlo, Monaco, Consolas, monospace !important;
+  font-size: 13px !important;
+}
+
+.chart-empty {
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+  background: #fafafa;
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+}
+
+.timeseries-chart {
+  width: 100%;
+  min-height: 320px;
+  overflow-x: auto;
+}
+
+.timeseries-chart .uplot {
+  width: 100% !important;
+}

@@ -1,0 +1,33 @@
+{
+  "name": "pv-fronted",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 8766 --host",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^4.8.3",
+    "antd": "^4.24.16",
+    "classnames": "^2.5.1",
+    "dayjs": "^1.11.13",
+    "lodash": "^4.17.21",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^5.3.4",
+    "uplot": "^1.6.31",
+    "uplot-react": "^1.2.2"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.16",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
+    "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "^4.4.1",
+    "less": "^4.2.2",
+    "typescript": "^5.8.3",
+    "vite": "^4.5.14"
+  }
+}
