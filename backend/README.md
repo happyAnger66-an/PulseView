@@ -34,6 +34,7 @@ API: http://localhost:8080
 
 - `system_stats` — scalar fields + `_time` (microseconds)
 - `system_stats_cpu_stats`, `system_stats_gpu_stats`, `system_stats_proc_stats`, ...
+- `system_stats_node_pub_stats`, `system_stats_node_sub_stats` — ROS 节点 pub/sub 统计
 
 Example:
 

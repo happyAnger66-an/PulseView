@@ -31,6 +31,19 @@ npm run dev
 - 前端: http://localhost:8766
 - 后端: http://localhost:8080（vite 默认代理 `/api`）
 
+### 启动报 ENOSPC（file watchers 耗尽）
+
+Linux 上同时打开很多项目时可能触发。`npm run dev` 已默认启用 **CHOKIDAR polling** 规避。
+
+永久提高系统上限（可选）：
+
+```bash
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+关闭 polling：`VITE_USE_POLLING=false npm run dev`（需 inotify 上限足够）
+
 ## 仅前端 Mock 模式
 
 ```bash

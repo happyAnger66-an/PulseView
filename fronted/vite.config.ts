@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 const useMock = process.env.USE_MOCK === 'true';
+// Linux 上 inotify 监视器耗尽 (ENOSPC) 时改用 polling；可设 VITE_USE_POLLING=false 关闭
+const usePolling = process.env.VITE_USE_POLLING !== 'false';
 
 export default defineConfig(async () => {
   const plugins = [react()];
@@ -25,6 +27,11 @@ export default defineConfig(async () => {
           target: process.env.PROXY || 'http://localhost:8080',
           changeOrigin: true,
         },
+      },
+      watch: {
+        usePolling,
+        interval: usePolling ? 800 : undefined,
+        ignored: ['**/node_modules/**', '**/dist/**', '**/.git/**'],
       },
     },
     build: {

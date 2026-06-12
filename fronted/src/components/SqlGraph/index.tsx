@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, Button, Input, Tabs, Tree, Tag, Space, message } from 'antd';
+import type { DataNode } from 'antd/es/tree';
 import { getDatasourceSchema, runSqlQuery, ingestDatasource } from '@/services/sql';
 import type { SchemaTable, SqlQueryResult } from '@/types';
 import SqlResultTable from './SqlResultTable';
 import SqlTimeseriesChart from './SqlTimeseriesChart';
+import {
+  buildSqlFromField,
+  buildSqlFromTable,
+  parseSchemaTreeKey,
+} from './sqlBuilder';
 import './style.less';
 
 const { TabPane } = Tabs;
@@ -43,6 +49,7 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
   const [result, setResult] = useState<SqlQueryResult | null>(null);
   const [schema, setSchema] = useState<SchemaTable[]>([]);
   const [tab, setTab] = useState<'graph' | 'table'>('graph');
+  const [selectedKey, setSelectedKey] = useState<string>();
 
   const loadSchema = async () => {
     try {
@@ -57,25 +64,55 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
     loadSchema();
   }, [datasourceId]);
 
-  const executeQuery = async () => {
-    if (!sql.trim()) return;
-    setLoading(true);
-    setError('');
-    try {
-      const res = await runSqlQuery(datasourceId, sql);
-      setResult(res);
-      if (res.meta.value_columns?.length) {
-        setTab('graph');
-      } else {
-        setTab('table');
+  const executeQuery = useCallback(
+    async (querySql?: string) => {
+      const q = (querySql ?? sql).trim();
+      if (!q) return;
+      setSql(q);
+      setLoading(true);
+      setError('');
+      try {
+        const res = await runSqlQuery(datasourceId, q);
+        setResult(res);
+        if (res.meta.value_columns?.length) {
+          setTab('graph');
+        } else {
+          setTab('table');
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : '查询失败');
+        setResult(null);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : '查询失败');
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [datasourceId, sql],
+  );
+
+  const handleSchemaSelect = useCallback(
+    (keys: React.Key[]) => {
+      const key = String(keys[0] ?? '');
+      if (!key) return;
+      setSelectedKey(key);
+
+      const parsed = parseSchemaTreeKey(key);
+      if (!parsed) return;
+
+      let generated = '';
+      if (parsed.column) {
+        const table = schema.find((t) => t.name === parsed.table);
+        const col = table?.columns.find((c) => c.name === parsed.column);
+        if (!col) return;
+        generated = buildSqlFromField(parsed.table, parsed.column, col.type, schema);
+      } else {
+        generated = buildSqlFromTable(parsed.table, schema);
+      }
+
+      setSql(generated);
+      executeQuery(generated);
+    },
+    [schema, executeQuery],
+  );
 
   const handleReingest = async () => {
     setReingesting(true);
@@ -90,19 +127,20 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
     }
   };
 
-  const treeData = schema.map((table) => ({
+  const treeData: DataNode[] = schema.map((table) => ({
     title: table.name,
     key: table.name,
+    selectable: true,
     children: table.columns.map((col) => ({
       title: `${col.name} (${col.type})`,
       key: `${table.name}.${col.name}`,
       isLeaf: true,
+      selectable: true,
     })),
   }));
 
-  const ingestError = ingestStatus === 'error' && ingestInfo?.message
-    ? String(ingestInfo.message)
-    : '';
+  const ingestError =
+    ingestStatus === 'error' && ingestInfo?.message ? String(ingestInfo.message) : '';
 
   return (
     <div className='sql-graph'>
@@ -120,7 +158,14 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
         </Space>
         <Space wrap>
           {PRESET_QUERIES.map((q) => (
-            <Button key={q.label} size='small' onClick={() => setSql(q.sql)}>
+            <Button
+              key={q.label}
+              size='small'
+              onClick={() => {
+                setSql(q.sql);
+                executeQuery(q.sql);
+              }}
+            >
               {q.label}
             </Button>
           ))}
@@ -130,8 +175,15 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
       <div className='sql-graph-body'>
         <div className='sql-graph-schema'>
           <div className='schema-title'>DuckDB Schema</div>
+          <div className='schema-hint'>点击字段自动生成 SQL 并查询</div>
           {treeData.length ? (
-            <Tree treeData={treeData} defaultExpandAll selectable={false} />
+            <Tree
+              className='schema-tree'
+              treeData={treeData}
+              defaultExpandAll
+              selectedKeys={selectedKey ? [selectedKey] : []}
+              onSelect={handleSchemaSelect}
+            />
           ) : (
             <Alert type='warning' message='暂无表结构，请先完成 MCAP 导入' />
           )}
@@ -150,7 +202,7 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
                 }
               }}
             />
-            <Button type='primary' loading={loading} onClick={executeQuery}>
+            <Button type='primary' loading={loading} onClick={() => executeQuery()}>
               查询
             </Button>
           </div>
