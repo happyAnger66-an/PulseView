@@ -1,6 +1,6 @@
 # PulseView
 
-ROS2 / 监控性能数据的轻量可视化工具。通过可插拔的格式导入器把多种数据（MCAP、Protobuf、CTF）
+监控性能数据的轻量可视化工具。通过可插拔的格式导入器把多种数据（MCAP、Protobuf、CTF）
 统一导入 DuckDB 后用 SQL 探索，并按数据形态自动选择折线、泳道（Timeline）或表格展示；
 另支持通过 PromQL 查询 SQLite 时序库。
 
@@ -25,6 +25,14 @@ ROS2 / 监控性能数据的轻量可视化工具。通过可插拔的格式导�
 | `timeseries` | 图表 | 有 `time_column` 且有 `value_columns` | uPlot 多线时序图 + 统计表（avg/p50/p99）+ 图例显隐 |
 | `timeline` | Timeline | 有 `time_column` 且有 `dur_column` | canvas 泳道（swimlane）渲染，拖拽框选缩放、双击重置、hover tooltip |
 | `table` | 表格 | 任意结果 | 原始查询结果表 |
+
+## 快速预览
+
+#### 设置数据源
+![设置数据源](./img/data_sources.png)
+
+#### 查看监控指标
+![查看监控指标](./img/metrics.png)
 
 ## 目录
 
