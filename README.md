@@ -11,10 +11,12 @@
 | `ros2_mcap` | ROS2 MCAP | MCAP 文件 + Topic + Msg 类型 | ingest / schema / sql | 折线 / 表格 |
 | `protobuf` | Protobuf | length-delimited `.pb` 文件 + 消息类型 | ingest / schema / sql | 折线 / 表格 |
 | `ctf` | CTF Trace | CTF trace 目录（内置最小 CTF，或真实 LTTng / `ros2 trace`） | ingest / schema / sql | Timeline / 表格 |
+| `perfetto` | Perfetto Trace | Perfetto trace 文件（`.perfetto-trace` / `.pftrace` / Chrome JSON 等） | ingest / schema / sql | Timeline / 表格 |
 | `sqlite` | SQLite | SQLite 文件路径 | promql | 折线 |
 
 > `ingest/schema/sql` 类数据源导入 DuckDB 后用 SQL 查询；`sqlite` 走 PromQL 查询。
 > CTF 自动识别内置最小格式与真实 LTTng/ros2_tracing；读取真实 LTTng 需系统 `bt2`，详见 [docs/ros2_tracing.md](docs/ros2_tracing.md)。
+> Perfetto 数据源通过 Trace Processor 解析，需 `pip install perfetto` + `trace_processor_shell`，详见 [docs/support_perfetto.md](docs/support_perfetto.md)。
 > 能力由后端 `PLUGIN_META` 声明，前端据此显隐 UI。
 
 ## 支持的图表类型
@@ -111,6 +113,7 @@ npm run dev            # http://localhost:8766，代理 /api → :8080
 | Protobuf | `../test2/proto_sample.pb` | `python backend/scripts/gen_proto_sample.py` | `PULSEVIEW_TEST_PROTO` |
 | CTF（内置最小） | `../test2/ctf_sample/` | `python backend/scripts/gen_ctf_sample.py` | `PULSEVIEW_TEST_CTF` |
 | CTF（真实 LTTng） | `ros2 trace` 录制目录 | 需 ROS 2 + lttng-tools，见 [docs/ros2_tracing.md](docs/ros2_tracing.md) | — |
+| Perfetto | `../test2/perfetto_sample.json` | `python backend/scripts/gen_perfetto_sample.py` | `PULSEVIEW_TEST_PERFETTO` |
 
 > LTTng 读取分支的单测（`tests/test_lttng_ctf.py`）内置一个 bt2 可解析的「LTTng 形态」
 > CTF 夹具，无需安装 lttng-tools/ROS 即可运行；未装 `bt2` 时该用例自动 skip。

@@ -22,6 +22,12 @@ import {
   PLUGIN_TYPE as CTF_TYPE,
   PLUGIN_NAME as CTF_NAME,
 } from './ctf';
+import {
+  DatasourceForm as PerfettoForm,
+  QueryPanel as PerfettoQueryPanel,
+  PLUGIN_TYPE as PERFETTO_TYPE,
+  PLUGIN_NAME as PERFETTO_NAME,
+} from './perfetto';
 import type { PluginDefinition, QueryLanguage } from '@/types';
 
 export const PLUGINS: Record<string, PluginDefinition> = {
@@ -60,6 +66,15 @@ export const PLUGINS: Record<string, PluginDefinition> = {
     defaultVisualizations: ['timeline', 'table'],
     DatasourceForm: CtfForm,
     QueryPanel: CtfQueryPanel,
+  },
+  [PERFETTO_TYPE]: {
+    type: PERFETTO_TYPE,
+    name: PERFETTO_NAME,
+    queryLanguage: 'sql',
+    capabilities: ['ingest', 'schema', 'sql'],
+    defaultVisualizations: ['timeline', 'table'],
+    DatasourceForm: PerfettoForm,
+    QueryPanel: PerfettoQueryPanel,
   },
 };
 

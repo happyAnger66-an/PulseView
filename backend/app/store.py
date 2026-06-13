@@ -48,6 +48,11 @@ PLUGIN_META = {
         "category": "tracing",
         "capabilities": ["ingest", "schema", "sql"],
     },
+    "perfetto": {
+        "plugin_type_name": "Perfetto Trace",
+        "category": "tracing",
+        "capabilities": ["ingest", "schema", "sql"],
+    },
 }
 
 

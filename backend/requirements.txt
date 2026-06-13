@@ -10,3 +10,9 @@ pydantic>=2.9.0
 # 它无法用 pip 安装。Ubuntu: `apt install python3-bt2 babeltrace2`，并用
 # `python3 -m venv --system-site-packages .venv` 重建虚拟环境使其可见。
 # 未安装时仅影响真实 LTTng trace 读取，内置最小 CTF 与其它格式不受影响。
+
+# 可选：解析 Perfetto trace（perfetto 数据源）。
+#   pip install perfetto
+# 另需 trace_processor_shell 二进制（perfetto 库默认联网下载；离线环境可 apt/手动安装，
+# 用环境变量 PULSEVIEW_TP_SHELL 指定或放入 PATH）。未安装时仅影响 Perfetto 数据源。
+perfetto>=0.12.0
