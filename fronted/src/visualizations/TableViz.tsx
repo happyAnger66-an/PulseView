@@ -1,14 +1,10 @@
 import { Table } from 'antd';
-import type { SqlQueryResult } from '@/types';
+import type { VizProps } from './types';
 
-interface Props {
-  result: SqlQueryResult;
-}
-
-export default function SqlResultTable({ result }: Props) {
-  const dataSource = result.rows.map((row, idx) => {
+export default function TableViz({ columns, rows }: VizProps) {
+  const dataSource = rows.map((row, idx) => {
     const record: Record<string, unknown> = { key: idx };
-    result.columns.forEach((col, i) => {
+    columns.forEach((col, i) => {
       record[col] = row[i];
     });
     return record;
@@ -20,7 +16,7 @@ export default function SqlResultTable({ result }: Props) {
       scroll={{ x: true }}
       pagination={{ pageSize: 50 }}
       dataSource={dataSource}
-      columns={result.columns.map((col) => ({
+      columns={columns.map((col) => ({
         title: col,
         dataIndex: col,
         key: col,

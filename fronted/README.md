@@ -4,10 +4,25 @@
 
 ## 数据源插件
 
-| 插件 | 查询语言 | 说明 |
-|------|----------|------|
-| `sqlite` | PromQL | 时序指标查询 |
-| `ros2_mcap` | SQL | MCAP → DuckDB，查询 SystemStats 等 ROS2 msg |
+| 插件 | 查询语言 | 能力 | 说明 |
+|------|----------|------|------|
+| `sqlite` | PromQL | promql | 时序指标查询 |
+| `ros2_mcap` | SQL | ingest/schema/sql | MCAP → DuckDB，查询 SystemStats 等 ROS2 msg |
+
+每个插件在 `src/plugins/{type}/index.tsx` 一次性导出 `DatasourceForm` + `QueryPanel`，并在
+`src/plugins/index.ts` 声明 `capabilities` 与 `defaultVisualizations`，由 `pages/explorer` 按
+`plugin.QueryPanel` 分发，无需在页面里 `if (type === ...)`。
+
+## 可视化注册表
+
+`src/visualizations/` 是与数据源解耦的图表注册表：每种图表声明 `accepts(meta)` 判断是否适用，
+`SqlGraph` 用 `selectViz(result.meta)` 动态生成 tab。新增图表（如 timeline 泳道图）只需 `registerViz`，
+查询/数据源侧零改动。
+
+| 图表 type | 适用条件 |
+|-----------|----------|
+| `timeseries` | 结果含 `_time` 且有数值列 |
+| `table` | 始终适用 |
 
 ## 开发（推荐：对接 Python 后端）
 
@@ -54,14 +69,18 @@ USE_MOCK=true npm run dev
 
 ```
 src/
-├── plugins/
+├── plugins/            # 数据源插件注册表（Form + QueryPanel + 能力声明）
 │   ├── sqlite/         # SQLite + PromQL
 │   └── ros2_mcap/      # MCAP + DuckDB + SQL
+├── visualizations/     # 图表注册表（与数据源解耦）
+│   ├── registry.ts     # registerViz / selectViz
+│   ├── TimeseriesViz.tsx
+│   └── TableViz.tsx
 ├── components/
 │   ├── PromGraph/      # PromQL 探索
-│   └── SqlGraph/       # SQL 探索 + Schema 树
+│   └── SqlGraph/       # SQL 探索 + Schema 树（viz 注册表驱动 tab）
 └── pages/
-    ├── explorer/       # 按插件类型切换查询 UI
+    ├── explorer/       # 按 plugin.QueryPanel 分发
     └── datasources/
 ```
 

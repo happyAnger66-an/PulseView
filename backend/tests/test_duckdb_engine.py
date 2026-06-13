@@ -9,8 +9,9 @@ def test_infer_columns_splits_dimensions_and_values():
         (1_000_000, "/a", "/cmd", 2.5),
         (2_000_000, "/b", "/odom", 3.1),
     ]
-    time_col, dims, values = _infer_columns(columns, rows)
+    time_col, dur_col, dims, values = _infer_columns(columns, rows)
     assert time_col == "_time"
+    assert dur_col is None
     assert dims == ["node", "topic"]
     assert values == ["hz"]
 
@@ -18,7 +19,7 @@ def test_infer_columns_splits_dimensions_and_values():
 def test_infer_columns_excludes_timestamp_suffix_from_values():
     columns = ["_time", "node", "hz", "min_delta_ts"]
     rows = [(1, "/a", 2.5, 999999)]
-    _, dims, values = _infer_columns(columns, rows)
+    _, _, dims, values = _infer_columns(columns, rows)
     assert dims == ["node"]
     assert values == ["hz"]
     assert "min_delta_ts" not in values

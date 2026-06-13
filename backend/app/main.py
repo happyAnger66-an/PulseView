@@ -7,12 +7,12 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-import app.ingest.adapters  # noqa: F401
+import app.ingest.adapters  # noqa: F401 — register ROS msg adapters
+import app.ingest.importers  # noqa: F401 — register format importers
 from app.duckdb_engine import get_schema, run_query
-from app.ingest.pipeline import ingest_mcap
-from app.mcap_inspect import inspect_mcap
+from app.ingest.importer import format_registry
 from app.models import ApiResponse, DatasourceCreate, DatasourceUpdate, IngestRequest, SqlQueryRequest
-from app.store import PLUGIN_META, store
+from app.store import PLUGIN_META, plugin_capabilities, store
 
 app = FastAPI(title="PulseView Backend")
 
@@ -71,9 +71,14 @@ def create_datasource(body: DatasourceCreate):
 
     Returns:
         ``ApiResponse``，``dat`` 为创建后的数据源对象（含 ingest 状态）。
+
+    Raises:
+        HTTPException: 400，未知插件类型。
     """
+    if body.plugin_type not in PLUGIN_META:
+        raise HTTPException(status_code=400, detail=f"unknown plugin_type: {body.plugin_type}")
     item = store.create(body.model_dump())
-    if body.plugin_type == "ros2_mcap":
+    if "ingest" in plugin_capabilities(body.plugin_type):
         _try_ingest(item["id"])
         item = store.get(item["id"])
     return ok(item)
@@ -116,7 +121,7 @@ def update_datasource(ds_id: int, body: DatasourceUpdate):
         item = store.update(ds_id, body.model_dump(exclude_none=True))
     except KeyError:
         raise HTTPException(status_code=404, detail="not found") from None
-    if item["plugin_type"] == "ros2_mcap":
+    if "ingest" in plugin_capabilities(item["plugin_type"]):
         _try_ingest(ds_id)
         item = store.get(ds_id)
     return ok(item)
@@ -136,23 +141,32 @@ def delete_datasource(ds_id: int):
     return ok("ok")
 
 
-@app.get("/api/mcap/inspect")
-def mcap_inspect(path: str = Query(...)):
-    """扫描 MCAP 文件，返回 topic 列表及消息类型、条数。
+@app.get("/api/inspect")
+def inspect_source(path: str = Query(...), plugin_type: str = Query("ros2_mcap")):
+    """通用文件扫描：按 plugin_type 分派到对应 FormatImporter 的 inspect。
 
     Args:
-        path: MCAP 文件绝对路径。
+        path: 原始文件绝对路径。
+        plugin_type: 数据源插件类型，默认 ros2_mcap。
 
     Returns:
-        ``ApiResponse``，``dat`` 含 ``topics`` 数组。
+        ``ApiResponse``，``dat`` 为该格式的结构信息（如 MCAP 的 ``topics`` 数组）。
 
     Raises:
-        HTTPException: 404，文件不存在。
+        HTTPException: 400 插件不支持 inspect；404 文件不存在。
     """
+    if not format_registry.has(plugin_type):
+        raise HTTPException(status_code=400, detail=f"plugin {plugin_type} does not support inspect")
     try:
-        return ok(inspect_mcap(path))
+        return ok(format_registry.get(plugin_type).inspect(path))
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@app.get("/api/mcap/inspect")
+def mcap_inspect(path: str = Query(...)):
+    """[兼容别名] 扫描 MCAP 文件，等价于 ``/api/inspect?plugin_type=ros2_mcap``。"""
+    return inspect_source(path=path, plugin_type="ros2_mcap")
 
 
 @app.post("/api/datasources/{ds_id}/ingest")
@@ -167,13 +181,13 @@ def ingest_datasource(ds_id: int, body: IngestRequest | None = None):
         ``ApiResponse``，``dat`` 为 ingest 结果（status、messages_decoded 等）。
 
     Raises:
-        HTTPException: 404 数据源不存在；400 非 ros2_mcap 类型。
+        HTTPException: 404 数据源不存在；400 插件不支持 ingest。
     """
     item = store.get(ds_id)
     if not item:
         raise HTTPException(status_code=404, detail="not found")
-    if item["plugin_type"] != "ros2_mcap":
-        raise HTTPException(status_code=400, detail="only ros2_mcap supports ingest")
+    if "ingest" not in plugin_capabilities(item["plugin_type"]):
+        raise HTTPException(status_code=400, detail=f"plugin {item['plugin_type']} does not support ingest")
     info = _try_ingest(ds_id, force=body.force if body else False)
     return ok(info)
 
@@ -186,7 +200,7 @@ def datasource_schema(ds_id: int):
         ds_id: 数据源 ID。
 
     Returns:
-        ``ApiResponse``，``dat`` 含 ``tables`` 数组；非 ros2_mcap 返回空表列表。
+        ``ApiResponse``，``dat`` 含 ``tables`` 数组；插件不支持 schema 时返回空表列表。
 
     Raises:
         HTTPException: 404，数据源不存在。
@@ -194,7 +208,7 @@ def datasource_schema(ds_id: int):
     item = store.get(ds_id)
     if not item:
         raise HTTPException(status_code=404, detail="not found")
-    if item["plugin_type"] != "ros2_mcap":
+    if "schema" not in plugin_capabilities(item["plugin_type"]):
         return ok({"tables": []})
     msg_type = item.get("settings", {}).get("mcap.msg_type")
     return ok(get_schema(store.duckdb_path(ds_id), msg_type))
@@ -211,13 +225,13 @@ def sql_query(body: SqlQueryRequest):
         ``ApiResponse``，``dat`` 含 ``columns``、``rows``、``meta``（时间/维度/数值列推断）。
 
     Raises:
-        HTTPException: 404 数据源不存在；400 非 ros2_mcap、DuckDB 未就绪或 SQL 非法。
+        HTTPException: 404 数据源不存在；400 插件不支持 SQL、DuckDB 未就绪或 SQL 非法。
     """
     item = store.get(body.datasource_id)
     if not item:
         raise HTTPException(status_code=404, detail="datasource not found")
-    if item["plugin_type"] != "ros2_mcap":
-        raise HTTPException(status_code=400, detail="sql query only supported for ros2_mcap")
+    if "sql" not in plugin_capabilities(item["plugin_type"]):
+        raise HTTPException(status_code=400, detail=f"plugin {item['plugin_type']} does not support sql query")
     try:
         return ok(run_query(store.duckdb_path(body.datasource_id), body.sql, body.limit))
     except FileNotFoundError as e:
@@ -259,24 +273,31 @@ def promql_query_range(body: dict[str, Any]):
 
 
 def _try_ingest(ds_id: int, force: bool = False) -> dict[str, Any]:
-    """对 ros2_mcap 数据源执行 MCAP → DuckDB 导入，并更新 ingest 状态。
+    """对声明 ingest 能力的数据源执行原始数据 → DuckDB 导入，并更新 ingest 状态。
+
+    按 plugin_type 分派到对应的 FormatImporter，settings 缺失键时置为 pending。
 
     Args:
         ds_id: 数据源 ID。
         force: 为 True 时忽略已有 DuckDB 文件并重新导入；为 False 时若已 ready 则跳过。
 
     Returns:
-        导入结果摘要（含 status、messages_decoded 等）；非 ros2_mcap 或数据源不存在时返回空 dict。
+        导入结果摘要（含 status、messages_decoded 等）；插件不支持 ingest 或数据源不存在时返回空 dict。
     """
     item = store.get(ds_id)
-    if not item or item["plugin_type"] != "ros2_mcap":
+    if not item or "ingest" not in plugin_capabilities(item["plugin_type"]):
         return {}
+    plugin_type = item["plugin_type"]
+    if not format_registry.has(plugin_type):
+        store.set_ingest_status(ds_id, "error", {"message": f"no importer for {plugin_type}"})
+        return {"status": "error", "message": f"no importer for {plugin_type}"}
+
+    importer = format_registry.get(plugin_type)
     settings = item.get("settings", {})
-    mcap_path = settings.get("mcap.path")
-    topic = settings.get("mcap.topic")
-    msg_type = settings.get("mcap.msg_type")
-    if not mcap_path or not topic or not msg_type:
-        store.set_ingest_status(ds_id, "pending", {"message": "missing mcap.path/topic/msg_type"})
+    missing = [k for k in importer.required_settings() if not settings.get(k)]
+    if missing:
+        msg = f"missing settings: {', '.join(missing)}"
+        store.set_ingest_status(ds_id, "pending", {"message": msg})
         return {"status": "pending"}
 
     db_path = store.duckdb_path(ds_id)
@@ -288,9 +309,9 @@ def _try_ingest(ds_id: int, force: bool = False) -> dict[str, Any]:
 
     store.set_ingest_status(ds_id, "running")
     try:
-        info = ingest_mcap(db_path, __import__("pathlib").Path(mcap_path), topic, msg_type)
+        info = importer.ingest(db_path, settings)
         if info.get("messages_decoded", 0) == 0:
-            raise ValueError(f"no messages decoded for topic {topic}")
+            raise ValueError("no messages decoded")
         info["status"] = "ready"
         store.set_ingest_status(ds_id, "ready", info)
         return info

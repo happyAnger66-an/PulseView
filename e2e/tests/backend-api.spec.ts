@@ -1,13 +1,15 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs';
 import {
+  createCtfDatasource,
+  createProtobufDatasource,
   createRos2McapDatasource,
   getSchema,
   resetDatasources,
   runSqlQuery,
   seedReadyDatasource,
 } from '../helpers/api';
-import { TEST_MCAP_PATH } from '../helpers/constants';
+import { TEST_CTF_PATH, TEST_MCAP_PATH, TEST_PROTO_PATH } from '../helpers/constants';
 
 test.describe('Backend API', () => {
   test.beforeAll(() => {
@@ -75,5 +77,46 @@ test.describe('Backend API', () => {
       data: { datasource_id: ds.id, sql: 'DELETE FROM system_stats' },
     });
     expect(res.status()).toBe(400);
+  });
+
+  test('ingests protobuf datasource and queries metrics', async ({ request }) => {
+    test.skip(!fs.existsSync(TEST_PROTO_PATH), `missing test proto: ${TEST_PROTO_PATH}`);
+    await resetDatasources(request);
+    const ds = await createProtobufDatasource(request);
+    expect(ds.ingest_status).toBe('ready');
+
+    const schema = await getSchema(request, ds.id);
+    const coresTable = schema.tables.find((t) => t.name === 'proto_metric_cores');
+    expect(coresTable?.dimension_keys).toEqual(['core']);
+
+    const result = await runSqlQuery(
+      request,
+      ds.id,
+      'SELECT _time, cpu_percent, mem_percent FROM proto_metric ORDER BY _time',
+    );
+    expect(result.meta.time_column).toBe('_time');
+    expect(result.meta.value_columns).toContain('cpu_percent');
+    expect(result.meta.row_count).toBeGreaterThan(0);
+  });
+
+  test('ingests ctf trace and queries spans', async ({ request }) => {
+    test.skip(!fs.existsSync(TEST_CTF_PATH), `missing test ctf: ${TEST_CTF_PATH}`);
+    await resetDatasources(request);
+    const ds = await createCtfDatasource(request);
+    expect(ds.ingest_status).toBe('ready');
+
+    const schema = await getSchema(request, ds.id);
+    const spans = schema.tables.find((t) => t.name === 'ctf_spans');
+    expect(spans?.table_kind).toBe('span');
+
+    const result = await runSqlQuery(
+      request,
+      ds.id,
+      'SELECT _time, _dur, track, name FROM ctf_spans ORDER BY _time',
+    );
+    expect(result.meta.time_column).toBe('_time');
+    expect(result.meta.dur_column).toBe('_dur');
+    expect(result.meta.dimension_columns).toContain('track');
+    expect(result.meta.row_count).toBeGreaterThan(0);
   });
 });

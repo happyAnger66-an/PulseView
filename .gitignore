@@ -64,3 +64,5 @@ e2e/test-results/
 e2e/playwright-report/
 e2e/playwright/.cache/
 node_modules/
+test-results/
+test2/

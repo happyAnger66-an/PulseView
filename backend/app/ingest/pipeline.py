@@ -9,6 +9,7 @@ from mcap_ros2.decoder import DecoderFactory
 
 from app.ingest.registry import IngestContext, registry
 from app.ingest.ros_msg_utils import ros_msg_to_dict
+from app.ingest.table_meta import write_table_meta
 
 
 def create_schema(conn: duckdb.DuckDBPyConnection, msg_type: str) -> None:
@@ -38,6 +39,7 @@ def ingest_mcap(
     try:
         create_schema(conn, msg_type)
         clear_tables(conn, msg_type)
+        write_table_meta(conn, adapter.tables())
 
         msg_id = 0
         decoded = 0

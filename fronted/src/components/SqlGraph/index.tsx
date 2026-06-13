@@ -1,49 +1,27 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Input, Tabs, Tree, Tag, Space, message } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { getDatasourceSchema, runSqlQuery, ingestDatasource } from '@/services/sql';
 import type { SchemaTable, SqlQueryResult } from '@/types';
-import SqlResultTable from './SqlResultTable';
-import SqlTimeseriesChart from './SqlTimeseriesChart';
+import { selectViz } from '@/visualizations';
 import {
   buildSqlFromField,
   buildSqlFromTable,
   buildDefaultMetricSql,
+  getTableShortName,
   parseSchemaTreeKey,
 } from './sqlBuilder';
 import './style.less';
 
 const { TabPane } = Tabs;
 
-const PRESET_QUERIES = [
-  {
-    label: 'CPU / 内存',
-    sql: 'SELECT _time, cpu_used_percent, mem_used_percent FROM system_stats ORDER BY _time',
-  },
-  {
-    label: 'GPU 利用率',
-    table: 'system_stats_gpu_stats',
-    metric: 'gpu_usage',
-  },
-  {
-    label: 'Node Pub Hz',
-    table: 'system_stats_node_pub_stats',
-    metric: 'hz',
-  },
-  {
-    label: 'Node Sub Hz',
-    table: 'system_stats_node_sub_stats',
-    metric: 'hz',
-  },
-  {
-    label: 'Node Sub IPC',
-    table: 'system_stats_node_sub_stats',
-    metric: 'avg_ipc',
-  },
-] as const;
-
-const DEFAULT_SQL =
-  'SELECT _time, cpu_used_percent, mem_used_percent FROM system_stats ORDER BY _time';
+/** 由 schema 元数据生成预设查询：每张声明了 default_metrics 的表一个按钮 */
+function buildPresets(schema: SchemaTable[]): { label: string; sql: string }[] {
+  return schema
+    .map((table) => ({ table, sql: buildDefaultMetricSql(table) }))
+    .filter((p): p is { table: SchemaTable; sql: string } => Boolean(p.sql))
+    .map(({ table, sql }) => ({ label: getTableShortName(table), sql }));
+}
 
 interface Props {
   datasourceId: number;
@@ -52,13 +30,13 @@ interface Props {
 }
 
 export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Props) {
-  const [sql, setSql] = useState<string>(DEFAULT_SQL);
+  const [sql, setSql] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [reingesting, setReingesting] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<SqlQueryResult | null>(null);
   const [schema, setSchema] = useState<SchemaTable[]>([]);
-  const [tab, setTab] = useState<'graph' | 'table'>('graph');
+  const [tab, setTab] = useState<string>('timeseries');
   const [selectedKey, setSelectedKey] = useState<string>();
 
   const loadSchema = async () => {
@@ -74,6 +52,16 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
     loadSchema();
   }, [datasourceId]);
 
+  const presets = useMemo(() => buildPresets(schema), [schema]);
+
+  // schema 加载后，把主表默认指标查询填入编辑器作为初始 SQL
+  useEffect(() => {
+    if (sql) return;
+    const mainTable = schema.find((t) => !t.parent_table && (t.default_metrics ?? []).length);
+    const defaultSql = mainTable ? buildDefaultMetricSql(mainTable) : presets[0]?.sql;
+    if (defaultSql) setSql(defaultSql);
+  }, [schema, presets, sql]);
+
   const executeQuery = useCallback(
     async (querySql?: string) => {
       const q = (querySql ?? sql).trim();
@@ -84,11 +72,10 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
       try {
         const res = await runSqlQuery(datasourceId, q);
         setResult(res);
-        if (res.meta.value_columns?.length) {
-          setTab('graph');
-        } else {
-          setTab('table');
-        }
+        // 选出适用的可视化，默认优先非表格（如时序图）
+        const vizzes = selectViz(res.meta);
+        const preferred = vizzes.find((v) => v.type !== 'table') ?? vizzes[0];
+        if (preferred) setTab(preferred.type);
       } catch (e) {
         setError(e instanceof Error ? e.message : '查询失败');
         setResult(null);
@@ -167,30 +154,18 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
           {ingestError ? <Alert type='error' showIcon message={ingestError} /> : null}
         </Space>
         <Space wrap>
-          {PRESET_QUERIES.map((q) => {
-            const sql =
-              'sql' in q
-                ? q.sql
-                : buildDefaultMetricSql(
-                    schema.find((t) => t.name === q.table) ?? { name: q.table, columns: [] },
-                    q.metric,
-                  ) ?? '';
-            return (
-              <Button
-                key={q.label}
-                size='small'
-                disabled={!('sql' in q) && !schema.some((t) => t.name === q.table)}
-                onClick={() => {
-                  if (sql) {
-                    setSql(sql);
-                    executeQuery(sql);
-                  }
-                }}
-              >
-                {q.label}
-              </Button>
-            );
-          })}
+          {presets.map((q) => (
+            <Button
+              key={q.label}
+              size='small'
+              onClick={() => {
+                setSql(q.sql);
+                executeQuery(q.sql);
+              }}
+            >
+              {q.label}
+            </Button>
+          ))}
         </Space>
       </div>
 
@@ -229,25 +204,23 @@ export default function SqlGraph({ datasourceId, ingestStatus, ingestInfo }: Pro
             </Button>
           </div>
           {error && <Alert type='error' message={error} showIcon style={{ marginBottom: 12 }} />}
-          {result && (
-            <>
-              <Tabs activeKey={tab} onChange={(k) => setTab(k as 'graph' | 'table')}>
-                <TabPane tab={`图表 (${result.meta.row_count})`} key='graph' />
-                <TabPane tab='表格' key='table' />
-              </Tabs>
-              {tab === 'graph' ? (
-                <SqlTimeseriesChart
-                  columns={result.columns}
-                  rows={result.rows}
-                  timeColumn={result.meta.time_column}
-                  dimensionColumns={result.meta.dimension_columns}
-                  valueColumns={result.meta.value_columns}
-                />
-              ) : (
-                <SqlResultTable result={result} />
-              )}
-            </>
-          )}
+          {result && (() => {
+            const vizzes = selectViz(result.meta);
+            const active = vizzes.find((v) => v.type === tab) ?? vizzes[0];
+            const ActiveCpt = active?.component;
+            return (
+              <>
+                <Tabs activeKey={active?.type} onChange={setTab}>
+                  {vizzes.map((v) => (
+                    <TabPane tab={`${v.name} (${result.meta.row_count})`} key={v.type} />
+                  ))}
+                </Tabs>
+                {ActiveCpt && (
+                  <ActiveCpt columns={result.columns} rows={result.rows} meta={result.meta} />
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

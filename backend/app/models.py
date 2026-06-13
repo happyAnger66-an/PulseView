@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -11,9 +11,10 @@ class ApiResponse(BaseModel):
 
 
 class DatasourceCreate(BaseModel):
+    # 插件类型不再用 Literal 枚举写死，合法性由 API 层对照 PLUGIN_META 校验
+    plugin_type: str
     name: str
     description: str = ""
-    plugin_type: Literal["sqlite", "ros2_mcap"]
     settings: dict[str, Any] = Field(default_factory=dict)
     is_default: bool = False
 

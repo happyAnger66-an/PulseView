@@ -1,13 +1,29 @@
 import type { SchemaTable } from '@/types';
 
-const MAIN_TABLE = 'system_stats';
+const TIME_COLUMN = '_time';
+const DEFAULT_JOIN_KEY = 'msg_id';
+// 子表 JOIN 主表时主表固定用别名 s
+const PARENT_ALIAS = 's';
 
-function getTableAlias(tableName: string): string {
-  const part = tableName.replace(/^system_stats_?/, '') || 'main';
-  return part.charAt(0) || 't';
+/** 去掉主表前缀后的短名，用于展示与别名生成 */
+export function getTableShortName(table: SchemaTable): string {
+  if (!table.parent_table) return table.name;
+  const prefix = `${table.parent_table}_`;
+  return table.name.startsWith(prefix) ? table.name.slice(prefix.length) : table.name;
 }
 
-function orderByClause(alias: string, dims: string[], timeCol = 's._time'): string {
+function getTableAlias(table: SchemaTable): string {
+  const ch = getTableShortName(table).charAt(0) || 't';
+  return ch === PARENT_ALIAS ? 't' : ch;
+}
+
+function joinClause(table: SchemaTable, alias: string): string {
+  const joinKey = table.join_key ?? DEFAULT_JOIN_KEY;
+  return `FROM ${table.parent_table} ${PARENT_ALIAS}
+JOIN ${table.name} ${alias} ON ${alias}.${joinKey} = ${PARENT_ALIAS}.${joinKey}`;
+}
+
+function orderByClause(alias: string, dims: string[], timeCol = `${PARENT_ALIAS}.${TIME_COLUMN}`): string {
   const parts = [timeCol, ...dims.map((d) => `${alias}.${d}`)];
   return `ORDER BY ${parts.join(', ')}`;
 }
@@ -24,36 +40,33 @@ export function buildSqlFromField(
     return `SELECT ${columnName} FROM ${tableName} ORDER BY 1`;
   }
 
-  if (tableName === MAIN_TABLE) {
-    if (columnName === '_time') {
-      return `SELECT _time FROM ${MAIN_TABLE} ORDER BY _time`;
+  if (!table.parent_table) {
+    if (columnName === TIME_COLUMN) {
+      return `SELECT ${TIME_COLUMN} FROM ${tableName} ORDER BY ${TIME_COLUMN}`;
     }
-    return `SELECT _time, ${columnName} FROM ${MAIN_TABLE} ORDER BY _time`;
+    return `SELECT ${TIME_COLUMN}, ${columnName} FROM ${tableName} ORDER BY ${TIME_COLUMN}`;
   }
 
-  const alias = getTableAlias(tableName);
+  const alias = getTableAlias(table);
   const dims = table.dimension_keys ?? [];
   const dimSelect = dims.map((d) => `${alias}.${d}`).join(', ');
   const isNumeric = isNumericColumnType(columnType);
 
   if (isNumeric && dims.length && !dims.includes(columnName)) {
     const selectDims = dimSelect ? `, ${dimSelect}` : '';
-    return `SELECT s._time${selectDims}, ${alias}.${columnName}
-FROM ${MAIN_TABLE} s
-JOIN ${tableName} ${alias} ON ${alias}.msg_id = s.msg_id
+    return `SELECT ${PARENT_ALIAS}.${TIME_COLUMN}${selectDims}, ${alias}.${columnName}
+${joinClause(table, alias)}
 ${orderByClause(alias, dims)}`;
   }
 
-  if (columnName === '_time') {
-    return `SELECT s._time FROM ${MAIN_TABLE} s
-JOIN ${tableName} ${alias} ON ${alias}.msg_id = s.msg_id
-ORDER BY s._time`;
+  if (columnName === TIME_COLUMN) {
+    return `SELECT ${PARENT_ALIAS}.${TIME_COLUMN} ${joinClause(table, alias)}
+ORDER BY ${PARENT_ALIAS}.${TIME_COLUMN}`;
   }
 
-  return `SELECT s._time, ${alias}.${columnName}
-FROM ${MAIN_TABLE} s
-JOIN ${tableName} ${alias} ON ${alias}.msg_id = s.msg_id
-ORDER BY s._time`;
+  return `SELECT ${PARENT_ALIAS}.${TIME_COLUMN}, ${alias}.${columnName}
+${joinClause(table, alias)}
+ORDER BY ${PARENT_ALIAS}.${TIME_COLUMN}`;
 }
 
 /** 点击表名：预览该表前 100 行 */
@@ -63,17 +76,16 @@ export function buildSqlFromTable(tableName: string, schema: SchemaTable[]): str
     return `SELECT * FROM ${tableName} LIMIT 100`;
   }
 
-  if (tableName === MAIN_TABLE) {
-    return `SELECT * FROM ${MAIN_TABLE} ORDER BY _time LIMIT 100`;
+  if (!table.parent_table) {
+    return `SELECT * FROM ${tableName} ORDER BY ${TIME_COLUMN} LIMIT 100`;
   }
 
-  const alias = getTableAlias(tableName);
+  const alias = getTableAlias(table);
   const dims = table.dimension_keys ?? [];
-  const order = dims.length ? orderByClause(alias, dims) : 'ORDER BY s._time';
+  const order = dims.length ? orderByClause(alias, dims) : `ORDER BY ${PARENT_ALIAS}.${TIME_COLUMN}`;
 
-  return `SELECT s._time, ${alias}.*
-FROM ${MAIN_TABLE} s
-JOIN ${tableName} ${alias} ON ${alias}.msg_id = s.msg_id
+  return `SELECT ${PARENT_ALIAS}.${TIME_COLUMN}, ${alias}.*
+${joinClause(table, alias)}
 ${order}
 LIMIT 100`;
 }
@@ -90,22 +102,33 @@ export function isNumericColumnType(type: string): boolean {
   return ['INT', 'FLOAT', 'DOUBLE', 'DECIMAL', 'REAL', 'UINT', 'HUGE'].some((k) => upper.includes(k));
 }
 
-/** 根据表元数据生成默认指标查询 */
-export function buildDefaultMetricSql(table: SchemaTable, metric?: string): string | null {
-  const metrics = table.default_metrics ?? [];
-  const target = metric ?? metrics[0];
-  if (!target) return null;
+/** span 类表：生成 timeline 友好的区间查询（_time + _dur + 维度 + name） */
+function buildSpanSql(table: SchemaTable): string {
+  const cols = [TIME_COLUMN, '_dur', ...(table.dimension_keys ?? [])];
+  const hasName = table.columns.some((c) => c.name === 'name');
+  if (hasName && !cols.includes('name')) cols.push('name');
+  return `SELECT ${cols.join(', ')} FROM ${table.name} ORDER BY ${TIME_COLUMN}`;
+}
+
+/** 根据表元数据生成默认指标查询；不传 metrics 时使用全部 default_metrics */
+export function buildDefaultMetricSql(table: SchemaTable, metrics?: string | string[]): string | null {
+  if (table.table_kind === 'span') {
+    return buildSpanSql(table);
+  }
+  const defaults = table.default_metrics ?? [];
+  const targets = metrics === undefined ? defaults : Array.isArray(metrics) ? metrics : [metrics];
+  if (!targets.length) return null;
 
   if (!table.parent_table) {
-    return `SELECT _time, ${target} FROM ${table.name} ORDER BY _time`;
+    return `SELECT ${TIME_COLUMN}, ${targets.join(', ')} FROM ${table.name} ORDER BY ${TIME_COLUMN}`;
   }
 
-  const alias = getTableAlias(table.name);
+  const alias = getTableAlias(table);
   const dims = table.dimension_keys ?? [];
   const dimSelect = dims.length ? `, ${dims.map((d) => `${alias}.${d}`).join(', ')}` : '';
+  const metricSelect = targets.map((m) => `${alias}.${m}`).join(', ');
 
-  return `SELECT s._time${dimSelect}, ${alias}.${target}
-FROM ${MAIN_TABLE} s
-JOIN ${table.name} ${alias} ON ${alias}.msg_id = s.msg_id
+  return `SELECT ${PARENT_ALIAS}.${TIME_COLUMN}${dimSelect}, ${metricSelect}
+${joinClause(table, alias)}
 ${orderByClause(alias, dims)}`;
 }

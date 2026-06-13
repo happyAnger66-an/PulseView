@@ -1,5 +1,13 @@
 import type { APIRequestContext } from '@playwright/test';
-import { API_BASE, TEST_MCAP_PATH, TEST_MSG_TYPE, TEST_TOPIC } from './constants';
+import {
+  API_BASE,
+  TEST_CTF_PATH,
+  TEST_MCAP_PATH,
+  TEST_MSG_TYPE,
+  TEST_PROTO_MSG_TYPE,
+  TEST_PROTO_PATH,
+  TEST_TOPIC,
+} from './constants';
 
 interface ApiEnvelope<T> {
   dat: T;
@@ -19,6 +27,7 @@ export interface SqlQueryResult {
   rows: unknown[][];
   meta: {
     time_column?: string;
+    dur_column?: string;
     dimension_columns?: string[];
     value_columns?: string[];
     row_count: number;
@@ -58,6 +67,35 @@ export async function createRos2McapDatasource(request: APIRequestContext, name 
   );
 }
 
+export async function createProtobufDatasource(request: APIRequestContext, name = 'e2e-proto') {
+  return parseApi<Datasource>(
+    await request.post(`${API_BASE}/api/datasources`, {
+      data: {
+        name,
+        description: 'e2e proto fixture',
+        plugin_type: 'protobuf',
+        settings: {
+          'proto.path': TEST_PROTO_PATH,
+          'proto.msg_type': TEST_PROTO_MSG_TYPE,
+        },
+      },
+    }),
+  );
+}
+
+export async function createCtfDatasource(request: APIRequestContext, name = 'e2e-ctf') {
+  return parseApi<Datasource>(
+    await request.post(`${API_BASE}/api/datasources`, {
+      data: {
+        name,
+        description: 'e2e ctf fixture',
+        plugin_type: 'ctf',
+        settings: { 'ctf.path': TEST_CTF_PATH },
+      },
+    }),
+  );
+}
+
 export async function resetDatasources(request: APIRequestContext) {
   const items = await listDatasources(request);
   for (const item of items) {
@@ -66,7 +104,7 @@ export async function resetDatasources(request: APIRequestContext) {
 }
 
 export async function getSchema(request: APIRequestContext, dsId: number) {
-  return parseApi<{ tables: Array<{ name: string; dimension_keys?: string[] }> }>(
+  return parseApi<{ tables: Array<{ name: string; dimension_keys?: string[]; table_kind?: string }> }>(
     await request.get(`${API_BASE}/api/datasources/${dsId}/schema`),
   );
 }

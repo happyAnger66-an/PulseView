@@ -6,6 +6,7 @@ from typing import Any
 import duckdb
 
 from app.ingest.registry import registry
+from app.ingest.table_meta import META_TABLE, read_table_meta
 
 SKIP_VALUE_COLUMNS = frozenset({"msg_id", "idx", "seq"})
 SKIP_VALUE_SUFFIXES = ("_ts",)
@@ -27,37 +28,48 @@ def get_schema(db_path: Path, msg_type: str | None = None) -> dict[str, Any]:
     if not db_path.exists():
         return {"tables": []}
 
-    adapter_meta: dict[str, dict[str, Any]] = {}
-    if msg_type:
-        try:
-            adapter = registry.get(msg_type)
-            for table in adapter.tables():
-                adapter_meta[table.name] = {
-                    "parent_table": table.parent_table,
-                    "join_key": table.join_key,
-                    "dimension_keys": table.dimension_keys,
-                    "default_metrics": table.default_metrics,
-                }
-        except KeyError:
-            pass
-
     conn = duckdb.connect(str(db_path), read_only=True)
     try:
+        # 优先使用 ingest 时落库的元数据表；旧库无此表时回退到 Adapter 查找（向后兼容）
+        table_meta = read_table_meta(conn)
+        if not table_meta and msg_type:
+            table_meta = _adapter_meta(msg_type)
+
         tables = conn.execute(
             "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
         ).fetchall()
         result = []
         for (table_name,) in tables:
+            if table_name == META_TABLE:
+                continue
             cols = conn.execute(f"PRAGMA table_info('{table_name}')").fetchall()
             entry: dict[str, Any] = {
                 "name": table_name,
                 "columns": [{"name": c[1], "type": c[2]} for c in cols],
             }
-            entry.update(adapter_meta.get(table_name, {}))
+            entry.update(table_meta.get(table_name, {}))
             result.append(entry)
         return {"tables": result}
     finally:
         conn.close()
+
+
+def _adapter_meta(msg_type: str) -> dict[str, dict[str, Any]]:
+    """向后兼容：从 RosMsgAdapter 提取表元数据（用于无 _pv_table_meta 的旧库）。"""
+    meta: dict[str, dict[str, Any]] = {}
+    try:
+        adapter = registry.get(msg_type)
+    except KeyError:
+        return meta
+    for table in adapter.tables():
+        meta[table.name] = {
+            "table_kind": table.table_kind,
+            "parent_table": table.parent_table,
+            "join_key": table.join_key,
+            "dimension_keys": table.dimension_keys,
+            "default_metrics": table.default_metrics,
+        }
+    return meta
 
 
 def run_query(db_path: Path, sql: str, limit: int = 1000) -> dict[str, Any]:
@@ -75,13 +87,14 @@ def run_query(db_path: Path, sql: str, limit: int = 1000) -> dict[str, Any]:
         columns = [d[0] for d in cur.description]
         rows = cur.fetchall()
 
-        time_column, dimension_columns, value_columns = _infer_columns(columns, rows)
+        time_column, dur_column, dimension_columns, value_columns = _infer_columns(columns, rows)
 
         return {
             "columns": columns,
             "rows": [_serialize_row(row) for row in rows],
             "meta": {
                 "time_column": time_column,
+                "dur_column": dur_column,
                 "dimension_columns": dimension_columns,
                 "value_columns": value_columns,
                 "row_count": len(rows),
@@ -94,13 +107,14 @@ def run_query(db_path: Path, sql: str, limit: int = 1000) -> dict[str, Any]:
 def _infer_columns(
     columns: list[str],
     rows: list[tuple],
-) -> tuple[str | None, list[str], list[str]]:
+) -> tuple[str | None, str | None, list[str], list[str]]:
     time_column = _detect_time_column(columns)
+    dur_column = "_dur" if "_dur" in columns else None
     dimension_columns: list[str] = []
     value_columns: list[str] = []
 
     for col in columns:
-        if col == time_column or col in SKIP_VALUE_COLUMNS:
+        if col == time_column or col == dur_column or col in SKIP_VALUE_COLUMNS:
             continue
         idx = columns.index(col)
         if col in KNOWN_DIMENSION_COLUMNS or not _looks_numeric(rows, idx):
@@ -110,7 +124,7 @@ def _infer_columns(
         else:
             value_columns.append(col)
 
-    return time_column, dimension_columns, value_columns
+    return time_column, dur_column, dimension_columns, value_columns
 
 
 def _detect_time_column(columns: list[str]) -> str | None:

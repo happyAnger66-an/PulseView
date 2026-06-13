@@ -24,6 +24,11 @@ class TableDef:
     dimension_keys: list[str] = field(default_factory=list)
     # 前端默认可视化的数值指标列
     default_metrics: list[str] = field(default_factory=list)
+    # 数据形态，决定前端默认图表：
+    #   timeseries - 时序指标（折线图）
+    #   span       - 区间事件（需 _time + _dur，timeline 泳道图）
+    #   log        - 日志/文本（表格）
+    table_kind: str = "timeseries"
 
 
 @dataclass

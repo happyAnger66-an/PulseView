@@ -18,7 +18,7 @@ export interface Datasource {
   id: number;
   name: string;
   description?: string;
-  plugin_type: 'sqlite' | 'ros2_mcap';
+  plugin_type: string;
   plugin_type_name: string;
   settings: DatasourceSettings;
   is_default: boolean;
@@ -32,6 +32,7 @@ export interface DatasourcePluginMeta {
   plugin_type: string;
   plugin_type_name: string;
   category: string;
+  capabilities?: string[];
 }
 
 export interface PromQueryRangeParams {
@@ -68,6 +69,8 @@ export interface SchemaTable {
   join_key?: string;
   dimension_keys?: string[];
   default_metrics?: string[];
+  /** 数据形态：timeseries | span | log，决定默认可视化 */
+  table_kind?: string;
 }
 
 export interface SqlQueryResult {
@@ -75,6 +78,8 @@ export interface SqlQueryResult {
   rows: unknown[][];
   meta: {
     time_column?: string;
+    /** 区间时长列（span 数据），存在时启用 timeline 泳道视图 */
+    dur_column?: string;
     dimension_columns?: string[];
     value_columns?: string[];
     row_count: number;
@@ -85,7 +90,13 @@ export interface PluginDefinition {
   type: string;
   name: string;
   queryLanguage: QueryLanguage;
+  /** 后端能力声明的镜像，用于前端按能力显隐 UI */
+  capabilities: string[];
+  /** 该数据源默认可用的可视化类型（viz registry 的 type） */
+  defaultVisualizations: string[];
   DatasourceForm: ComponentType<DatasourceFormProps>;
+  /** 探索页查询面板（按数据源类型分发） */
+  QueryPanel: ComponentType<QueryPanelProps>;
 }
 
 export interface DatasourceFormProps {
@@ -93,4 +104,8 @@ export interface DatasourceFormProps {
   data?: Partial<Datasource>;
   onFinish: (values: Pick<Datasource, 'name' | 'description' | 'settings'>) => void;
   submitLoading?: boolean;
+}
+
+export interface QueryPanelProps {
+  datasource: Datasource;
 }

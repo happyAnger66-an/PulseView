@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Card, Select, Empty, Alert } from 'antd';
-import PromGraph from '@/components/PromGraph';
-import SqlGraph from '@/components/SqlGraph';
 import { useAppContext } from '@/components/Layout';
-import { getQueryLanguage } from '@/plugins';
+import { getPlugin } from '@/plugins';
+import '@/visualizations';
 
 export default function ExplorerPage() {
   const { datasources, defaultDatasource } = useAppContext();
@@ -16,7 +15,7 @@ export default function ExplorerPage() {
   }, [defaultDatasource, datasourceId]);
 
   const current = datasources.find((d) => d.id === datasourceId);
-  const queryLanguage = current ? getQueryLanguage(current.plugin_type) : 'promql';
+  const plugin = current ? getPlugin(current.plugin_type) : undefined;
 
   if (!datasources.length) {
     return (
@@ -43,34 +42,11 @@ export default function ExplorerPage() {
         />
       }
     >
-      {queryLanguage === 'sql' ? (
-        <>
-          <Alert
-            type='info'
-            showIcon
-            style={{ marginBottom: 16 }}
-            message='ROS2 MCAP 数据源：MCAP 已导入 DuckDB，使用 SQL 查询 SystemStats 等指标。Ctrl+Enter 执行。'
-          />
-          {datasourceId && (
-            <SqlGraph
-              key={datasourceId}
-              datasourceId={datasourceId}
-              ingestStatus={current?.ingest_status}
-              ingestInfo={current?.ingest_info}
-            />
-          )}
-        </>
-      ) : (
-        <>
-          <Alert
-            type='info'
-            showIcon
-            style={{ marginBottom: 16 }}
-            message='SQLite 数据源：通过 PromQL 查询时序指标。'
-          />
-          {datasourceId && <PromGraph key={datasourceId} datasourceId={datasourceId} />}
-        </>
-      )}
+      {current && plugin ? (
+        <plugin.QueryPanel datasource={current} />
+      ) : current ? (
+        <Alert type='warning' showIcon message={`未注册的数据源类型：${current.plugin_type}`} />
+      ) : null}
     </Card>
   );
 }

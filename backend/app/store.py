@@ -10,10 +10,38 @@ DATA_DIR = Path(os.environ.get("PULSEVIEW_DATA_DIR", str(_DEFAULT_DATA_DIR)))
 META_FILE = DATA_DIR / "datasources.json"
 DUCKDB_DIR = DATA_DIR / "duckdb"
 
+# capabilities 声明插件支持的能力，API 层据此分派而非比较 plugin_type 字符串：
+#   ingest  - 支持把原始文件导入 DuckDB
+#   schema  - 支持返回 DuckDB 表结构
+#   sql     - 支持 SQL 查询
+#   promql  - 支持 PromQL 查询
 PLUGIN_META = {
-    "sqlite": {"plugin_type_name": "SQLite", "category": "timeseries"},
-    "ros2_mcap": {"plugin_type_name": "ROS2 MCAP", "category": "ros2"},
+    "sqlite": {
+        "plugin_type_name": "SQLite",
+        "category": "timeseries",
+        "capabilities": ["promql"],
+    },
+    "ros2_mcap": {
+        "plugin_type_name": "ROS2 MCAP",
+        "category": "ros2",
+        "capabilities": ["ingest", "schema", "sql"],
+    },
+    "protobuf": {
+        "plugin_type_name": "Protobuf",
+        "category": "protobuf",
+        "capabilities": ["ingest", "schema", "sql"],
+    },
+    "ctf": {
+        "plugin_type_name": "CTF Trace",
+        "category": "tracing",
+        "capabilities": ["ingest", "schema", "sql"],
+    },
 }
+
+
+def plugin_capabilities(plugin_type: str) -> set[str]:
+    """返回插件声明的能力集合；未知插件类型返回空集合。"""
+    return set(PLUGIN_META.get(plugin_type, {}).get("capabilities", []))
 
 
 class DatasourceStore:
