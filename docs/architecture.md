@@ -115,11 +115,11 @@ classDiagram
     %% ====== API 层 ======
     class FastAPI_main {
         <<module>>
-        +/api/datasources CRUD
-        +/api/inspect
-        +/api/datasources/{id}/ingest
-        +/api/datasources/{id}/schema
-        +/api/sql/query
+        +api_datasources CRUD
+        +api_inspect
+        +api_datasources_id_ingest
+        +api_datasources_id_schema
+        +api_sql_query
         +_try_ingest(ds_id)
     }
     FastAPI_main ..> FormatImporterRegistry : 分派 ingest/inspect
