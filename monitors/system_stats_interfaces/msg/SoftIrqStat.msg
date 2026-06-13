@@ -1,0 +1,11 @@
+string cpu
+float32 hi
+float32 timer
+float32 net_tx
+float32 net_rx
+float32 block
+float32 irq_poll
+float32 tasklet
+float32 sched
+float32 hrtimer
+float32 rcu

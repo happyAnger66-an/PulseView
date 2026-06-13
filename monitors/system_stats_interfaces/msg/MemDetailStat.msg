@@ -1,0 +1,14 @@
+float32 swap_cached
+float32 active
+float32 inactive
+float32 active_anon
+float32 inactive_anon
+float32 active_file
+float32 inactive_file
+float32 dirty
+float32 writeback
+float32 anon_pages
+float32 mapped
+float32 kreclaimable
+float32 sreclaimable
+float32 sunreclaim

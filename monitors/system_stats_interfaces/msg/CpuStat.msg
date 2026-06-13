@@ -1,0 +1,9 @@
+string cpu_name
+float32 cpu_percent
+float32 cpu_user_percent
+float32 cpu_sys_percent
+float32 cpu_idle_percent
+float32 cpu_wa_percent
+float32 cpu_si_percent
+float32 cpu_hi_percent
+float32 cpu_ni_percent

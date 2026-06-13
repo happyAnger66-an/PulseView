@@ -10,10 +10,11 @@
 |-------------|------|------|---------------------|----------|
 | `ros2_mcap` | ROS2 MCAP | MCAP 文件 + Topic + Msg 类型 | ingest / schema / sql | 折线 / 表格 |
 | `protobuf` | Protobuf | length-delimited `.pb` 文件 + 消息类型 | ingest / schema / sql | 折线 / 表格 |
-| `ctf` | CTF Trace | CTF trace 目录（`metadata` + `stream_*`） | ingest / schema / sql | Timeline / 表格 |
+| `ctf` | CTF Trace | CTF trace 目录（内置最小 CTF，或真实 LTTng / `ros2 trace`） | ingest / schema / sql | Timeline / 表格 |
 | `sqlite` | SQLite | SQLite 文件路径 | promql | 折线 |
 
 > `ingest/schema/sql` 类数据源导入 DuckDB 后用 SQL 查询；`sqlite` 走 PromQL 查询。
+> CTF 自动识别内置最小格式与真实 LTTng/ros2_tracing；读取真实 LTTng 需系统 `bt2`，详见 [docs/ros2_tracing.md](docs/ros2_tracing.md)。
 > 能力由后端 `PLUGIN_META` 声明，前端据此显隐 UI。
 
 ## 支持的图表类型
@@ -52,6 +53,11 @@ cd backend
 pip install -r requirements.txt
 python run.py          # http://0.0.0.0:8080
 ```
+
+> 可选：读取**真实 LTTng / ros2_tracing CTF** 需系统包 `bt2`（babeltrace2 Python 绑定，
+> 无法 pip 安装）。`sudo apt install babeltrace2 python3-bt2`，再用
+> `python3 -m venv --system-site-packages .venv` 重建虚拟环境使其可见。未安装仅影响真实
+> LTTng 读取，内置最小 CTF 与其它格式不受影响。详见 [docs/ros2_tracing.md](docs/ros2_tracing.md)。
 
 主要 API：
 
@@ -103,18 +109,22 @@ npm run dev            # http://localhost:8766，代理 /api → :8080
 |------|------|----------|----------|
 | MCAP | `../test2/test2_0.mcap`（Topic `/slave/system_stats`） | 外部提供 | `PULSEVIEW_TEST_MCAP` |
 | Protobuf | `../test2/proto_sample.pb` | `python backend/scripts/gen_proto_sample.py` | `PULSEVIEW_TEST_PROTO` |
-| CTF | `../test2/ctf_sample/` | `python backend/scripts/gen_ctf_sample.py` | `PULSEVIEW_TEST_CTF` |
+| CTF（内置最小） | `../test2/ctf_sample/` | `python backend/scripts/gen_ctf_sample.py` | `PULSEVIEW_TEST_CTF` |
+| CTF（真实 LTTng） | `ros2 trace` 录制目录 | 需 ROS 2 + lttng-tools，见 [docs/ros2_tracing.md](docs/ros2_tracing.md) | — |
+
+> LTTng 读取分支的单测（`tests/test_lttng_ctf.py`）内置一个 bt2 可解析的「LTTng 形态」
+> CTF 夹具，无需安装 lttng-tools/ROS 即可运行；未装 `bt2` 时该用例自动 skip。
 
 ### 后端单元 / 集成测试
 
 ```bash
 cd backend
-python3 -m venv .venv
+python3 -m venv .venv                       # 如需跑真实 LTTng 用例，改用 --system-site-packages
 .venv/bin/pip install -r requirements.txt -r requirements-dev.txt
 .venv/bin/python -m pytest tests -q
 ```
 
-覆盖：Adapter flatten、DuckDB 列推断（含 `_dur`）、`_pv_table_meta` 元数据、各 Importer（MCAP/Protobuf/CTF）的 ingest + Schema + SQL 查询。
+覆盖：Adapter flatten、DuckDB 列推断（含 `_dur`）、`_pv_table_meta` 元数据、各 Importer（MCAP/Protobuf/CTF）的 ingest + Schema + SQL 查询，以及 LTTng CTF 解析与内置/LTTng 格式自动分派（`tests/test_lttng_ctf.py`，缺 `bt2` 时 skip）。
 
 ### E2E 测试（Playwright）
 

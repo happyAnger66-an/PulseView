@@ -5,7 +5,7 @@ from typing import Any
 
 from app.ingest.importer import format_registry
 from app.ingest.pipeline import ingest_mcap
-from app.mcap_inspect import inspect_mcap
+from app.ingest.mcap_inspect import inspect_mcap
 
 FORMAT_TYPE = "ros2_mcap"
 

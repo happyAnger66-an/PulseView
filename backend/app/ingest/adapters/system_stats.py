@@ -1,13 +1,38 @@
+"""``system_stats_interfaces/msg/SystemStats`` 的 RosMsgAdapter 实现（参考模板）。
+
+架构位置
+--------
+MCAP 导入管线（``ingest/pipeline.py``）在解码每条 ROS 消息后，按数据源配置的
+``mcap.msg_type`` 从 ``registry`` 查找 Adapter，调用 ``flatten()`` 展平为多表行写入 DuckDB。
+本文件是 **消息级** 扩展点：新增 ROS2 msg 类型时，复制本文件模式即可，无需改 MCAP Importer 或前端。
+
+新增 msg 类型步骤（最小）
+------------------------
+1. 在本目录新建 ``your_msg.py``，定义 ``MSG_TYPE``（须与 MCAP schema / 建源表单一致）
+2. 实现 ``YourMsgAdapter``：``tables()`` 声明表结构，``flatten()`` 映射字段
+3. 文件末尾 ``registry.register(YourMsgAdapter())``
+4. 在 ``adapters/__init__.py`` 增加 ``import app.ingest.adapters.your_msg``
+
+表设计约定
+----------
+- **主表**：含 ``msg_id``、``_time``（微秒）；``parent_table`` 为空；``default_metrics`` 列出默认可画折线的标量列
+- **子表**（数组字段）：含 ``msg_id``、``idx``；设 ``parent_table``、``dimension_keys``（分线维度）、``default_metrics``
+- **单条 struct**（非数组）：可并入主表或单独子表（见 ``mem_detail_stat``），``flatten`` 里按 dict 处理
+
+详见 ``docs/add_new_ros2_msg.md``。
+"""
 from __future__ import annotations
 
 from typing import Any
 
 from app.ingest.registry import ColumnDef, IngestContext, RosMsgAdapter, TableDef, registry
 
+# 与 MCAP schema、数据源 settings['mcap.msg_type'] 必须完全一致
 MSG_TYPE = "system_stats_interfaces/msg/SystemStats"
 
 
 def _stamp_to_us(header: dict[str, Any] | None) -> int:
+    """将 ROS ``header.stamp`` 转为微秒时间戳（备用；本 Adapter 主路径使用 ``ctx.time_us``）。"""
     if not header:
         return 0
     stamp = header.get("stamp") or {}
@@ -17,6 +42,10 @@ def _stamp_to_us(header: dict[str, Any] | None) -> int:
 
 
 def _scalar_row(msg: dict[str, Any], ctx: IngestContext) -> dict[str, Any]:
+    """提取主表一行：标量字段 + ``msg_id`` / ``_time``（来自 ``IngestContext``）。
+
+    新 msg 类型：把消息顶层标量字段映射到与 ``tables()`` 主表列名一致的 dict。
+    """
     header = msg.get("header") or {}
     return {
         "msg_id": ctx.msg_id,
@@ -33,6 +62,11 @@ def _scalar_row(msg: dict[str, Any], ctx: IngestContext) -> dict[str, Any]:
 
 
 def _expand_array(msg_id: int, items: list[dict[str, Any]] | None, mapper) -> list[dict[str, Any]]:
+    """将消息中的**数组字段**展开为子表多行（long format）。
+
+    每条元素经 ``mapper(item)`` 转为列 dict，并自动附加 ``msg_id``、``idx``。
+    新 msg 类型：对 each ``msg.get("your_array")`` 调用本函数，``mapper`` 内字段名须与子表 ``ColumnDef`` 一致。
+    """
     rows: list[dict[str, Any]] = []
     for idx, item in enumerate(items or []):
         row = mapper(item)
@@ -43,9 +77,24 @@ def _expand_array(msg_id: int, items: list[dict[str, Any]] | None, mapper) -> li
 
 
 class SystemStatsAdapter:
+    """``RosMsgAdapter`` 协议实现：SystemStats 消息 → DuckDB 主表 + 7 张子表。"""
+
+    # registry 按此字符串匹配；与 MSG_TYPE、数据源配置三者须一致
     msg_type = MSG_TYPE
 
     def tables(self) -> list[TableDef]:
+        """声明本 msg 对应的 DuckDB 表结构与可视化元数据。
+
+        ingest 时用于 ``CREATE TABLE`` 并写入 ``_pv_table_meta``；Schema API / 前端
+        ``sqlBuilder`` 据此生成 JOIN SQL 与预设查询。
+
+        返回 ``list[TableDef]``，每张表说明：
+        - 主表 ``system_stats``：``default_metrics`` → Explorer 预设按钮、默认折线指标
+        - 子表 ``*_stats``：``parent_table`` + ``dimension_keys`` → 按 cpu_name/node+topic 等分线
+        - 列类型用 DuckDB 类型名（``BIGINT``/``FLOAT``/``VARCHAR`` 等）
+
+        新 msg：先规划主表/子表，再在此列出全部 ``TableDef``；列名与 ``flatten()`` 输出键一致。
+        """
         return [
             TableDef(
                 "system_stats",
@@ -208,6 +257,21 @@ class SystemStatsAdapter:
         ]
 
     def flatten(self, msg: dict[str, Any], ctx: IngestContext) -> dict[str, list[dict[str, Any]]]:
+        """将单条解码后的 ROS 消息 dict 展平为「表名 → 行列表」。
+
+        Args:
+            msg: ``mcap_ros2`` 解码后的消息 dict（字段名与 .msg 定义一致）
+            ctx: 管线注入的 ``msg_id``（本条消息序号）与 ``time_us``（微秒时间戳）
+
+        Returns:
+            键为 ``tables()`` 中的表名，值为行 dict 列表；每行键须覆盖该表全部列
+            （缺失列可省略，插入时为 NULL）。主表通常 1 行/消息；数组子表 0~N 行。
+
+        新 msg 类型：
+        - 主表：``{"your_main": [_scalar_row(msg, ctx)]}``
+        - 数组：``"your_items": _expand_array(msg_id, msg.get("items"), lambda x: {...})``
+        - 可选 struct：判断 ``isinstance(x, dict)`` 后手工组 0/1 行（见 ``mem_detail_stat``）
+        """
         msg_id = ctx.msg_id
         rows: dict[str, list[dict[str, Any]]] = {
             "system_stats": [_scalar_row(msg, ctx)],
@@ -312,6 +376,7 @@ class SystemStatsAdapter:
         }
 
         mem_detail = msg.get("mem_detail_stat")
+        # 单条嵌套 struct（非数组）：无 idx，每消息 0 或 1 行
         if isinstance(mem_detail, dict):
             rows["system_stats_mem_detail_stat"] = [
                 {
@@ -329,4 +394,5 @@ class SystemStatsAdapter:
         return rows
 
 
+# 模块 import 时注册到全局 registry；并在 adapters/__init__.py 中 import 本模块以触发注册
 registry.register(SystemStatsAdapter())

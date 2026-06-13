@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package mw.proto;
+
+message MonitorConfig {
+  string master_ip = 1;
+  string slave_node_name = 2;
+  string slave_host_name = 3;
+  string slave_cmd = 4;
+  int32 interval = 5;
+  repeated string monitor_item = 6;
+  repeated string output = 7;
+}
+
+message FsStatConfig {
+  repeated string mount_point = 1;
+  string system_mount_point = 2;
+}
+
+message SystemStatsConfig {
+  string description = 1;
+  FsStatConfig fs_cfg = 17;
+  MonitorConfig mon_cfg = 21;
+}

@@ -1,0 +1,44 @@
+#pragma once
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <unordered_map>
+
+#include "diag/diag_item.h"
+
+namespace mw {
+namespace system_stats {
+
+class MemDiagItem : public DiagItem {
+ public:
+  MemDiagItem() : DiagItem() {}
+  ~MemDiagItem() = default;
+
+  int32_t Start(const mw::proto::SystemStatsDiagConfig &cfg) override;
+
+  int32_t Stop() override;
+
+  int32_t Diagnose(
+      const OutputData &data,
+      std::vector<diagnostic_msgs::msg::DiagnosticStatus> &status_vec) override;
+
+ private:
+  void node_defaul_mem_diag(
+      const OutputNodeInfo &node_mem,
+      std::vector<diagnostic_msgs::msg::DiagnosticStatus> &status_vec);
+  bool node_mem_diag(
+      const OutputNodeInfo &node_mem,
+      std::vector<diagnostic_msgs::msg::DiagnosticStatus> &status_vec);
+
+  struct MemDiagItemConfig {
+    float warn = 0.0;
+    float error = 0.0;
+  };
+
+  MemDiagItemConfig system_mem_;
+  MemDiagItemConfig default_mem_;
+  std::unordered_map<std::string, MemDiagItemConfig> nodes_mem_;
+};
+
+}  // namespace system_stats
+}  // namespace mw

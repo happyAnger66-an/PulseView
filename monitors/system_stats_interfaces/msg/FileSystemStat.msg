@@ -1,0 +1,14 @@
+string type
+float32 total
+float32 used
+float32 free
+float32 used_percent
+string mount_point
+float32 read_req_speed
+float32 write_req_speed
+float32 read_kb_speed
+float32 write_kb_speed
+float32 read_wait
+float32 write_wait
+float32 aqu_sz
+float32 util

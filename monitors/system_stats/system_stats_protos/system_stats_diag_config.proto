@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package mw.proto;
+
+message CpuConfig {
+  float warn = 1;
+  float error = 2;
+}
+
+message MemConfig {
+  float warn = 1;
+  float error = 2;
+}
+
+message CpuTempConfig {
+  float warn = 1;
+  float error = 2;
+}
+
+message GpuTempConfig {
+  float warn = 1;
+  float error = 2;
+}
+
+message NodeConfig {
+  string name = 1;
+  optional CpuConfig cpu = 3;
+  optional MemConfig mem = 4;
+}
+
+message PubTopicConfig {
+  optional string node = 1;
+  string topic = 2;
+  float hz = 3;
+  float warn = 4;
+  float error = 5;
+}
+
+message SubTopicConfig {
+  optional string node = 1;
+  string topic = 2;
+  float hz = 3;
+  float warn = 4;
+  float error = 5;
+}
+
+message FsConfig {
+  string mount_point = 1;
+  float warn = 3;
+  float error = 4;
+}
+
+message SystemStatsDiagConfig {
+  string description = 1;
+  optional CpuConfig default_cpu = 10;
+  optional MemConfig default_mem = 11;
+  optional CpuConfig system_cpu = 13;
+  optional MemConfig system_mem = 14;
+  repeated FsConfig fs = 17;
+  repeated PubTopicConfig pub_topic = 19;
+  repeated SubTopicConfig sub_topic = 20;
+  repeated NodeConfig node = 21;
+}

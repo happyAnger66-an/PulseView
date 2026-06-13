@@ -5,3 +5,8 @@ mcap>=1.2.0
 mcap-ros2-support>=0.5.0
 protobuf>=5.0,<6
 pydantic>=2.9.0
+
+# 可选：解析真实 LTTng / ros2_tracing CTF 需要系统包 bt2（babeltrace2 Python 绑定），
+# 它无法用 pip 安装。Ubuntu: `apt install python3-bt2 babeltrace2`，并用
+# `python3 -m venv --system-site-packages .venv` 重建虚拟环境使其可见。
+# 未安装时仅影响真实 LTTng trace 读取，内置最小 CTF 与其它格式不受影响。

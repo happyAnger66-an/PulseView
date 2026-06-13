@@ -1,0 +1,13 @@
+float32 in_hdr_errs_speed
+float32 in_addr_errs_speed
+float32 in_unkown_protos_speed
+float32 in_discards_speed
+float32 out_discards_speed
+float32 out_no_routes_speed
+float32 reasm_timeout_speed
+float32 reasm_reqds_speed
+float32 reasm_oks_speed
+float32 reasm_fails_speed
+float32 frag_oks_speed
+float32 frag_fails_speed
+float32 frag_creates_speed

@@ -1,0 +1,14 @@
+string node
+string topic
+float32 hz
+float32 min_delta
+float32 max_delta
+float32 avg_delta
+int64 min_delta_ts
+int64 max_delta_ts
+float32 min_proc_delta
+float32 max_proc_delta
+float32 avg_proc_delta
+int64 min_proc_delta_ts
+int64 max_proc_delta_ts
+int64 data_ts

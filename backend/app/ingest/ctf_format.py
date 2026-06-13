@@ -27,8 +27,13 @@ EV_CALLBACK_END = 1
 STREAM_FILENAME = "stream_0"
 METADATA_FILENAME = "metadata"
 
+# 内置最小 CTF 的专属标记：用于与真实 LTTng CTF 区分（两者共用 CTF magic 0xC1FC1FC1，
+# 无法靠 magic/文件名判别）。写入 metadata 注释，lttng_ctf.looks_like_lttng 据此识别。
+MARKER = "PULSEVIEW_MINIMAL_CTF"
+
 # 与下方二进制布局一一对应的 TSDL 元数据（CTF 1.8，纯文本形式）
 METADATA = """/* CTF 1.8 */
+/* PULSEVIEW_MINIMAL_CTF */
 
 typealias integer { size = 32; align = 8; signed = false; byte_order = le; } := uint32_t;
 typealias integer { size = 64; align = 8; signed = false; byte_order = le; } := uint64_t;
