@@ -1,0 +1,610 @@
+<mxfile host="65bd71144e">
+    <diagram id="pulseview-overview" name="Page 1 - 系统总览架构">
+        <mxGraphModel dx="1312" dy="799" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="p1_title" value="PulseView 系统总览架构&#xa;FastAPI + DuckDB + React 插件化监控数据可视化" style="text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="430" y="20" width="740" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_src_bg" value="Sources / Monitors" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="120" width="270" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_backend_bg" value="backend/app - FastAPI + Ingest + Query" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="360" y="120" width="500" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_storage_bg" value="Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="910" y="120" width="260" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_frontend_bg" value="fronted/src - React + Plugin/Viz Registry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="1220" y="120" width="340" height="720" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_docs_bg" value="Docs / Extension Guides" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="880" width="1520" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_monitors" value="monitors/system_stats&#xa;system_stats_node C++ / ROS&#xa;system_stats_interfaces/msg/*.msg" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="170" width="210" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_ros2_mcap" value="ros2_mcap&#xa;MCAP 文件&#xa;mcap.path / topic / msg_type" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="300" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_proto" value="protobuf&#xa;length-delimited .pb&#xa;pulseview.MetricSample" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="410" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_traces" value="ctf / perfetto&#xa;trace 目录或 trace 文件&#xa;span / Timeline 数据" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="520" width="210" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_sqlite" value="sqlite&#xa;SQLite 文件路径&#xa;PromQL query_range" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="635" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_api" value="backend/app/main.py&#xa;FastAPI API 层&#xa;/api/inspect&#xa;/api/datasources&#xa;/api/sql/query&#xa;/api/query_range" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="390" y="170" width="180" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_store" value="backend/app/store.py&#xa;PLUGIN_META&#xa;plugin_capabilities()&#xa;DatasourceStore" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="170" width="190" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_registry" value="ingest/importer.py&#xa;FormatImporter&#xa;format_registry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="390" y="360" width="180" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_importers" value="ingest/importers/*.py&#xa;McapImporter&#xa;ProtobufImporter&#xa;CtfImporter&#xa;PerfettoImporter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="335" width="190" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_ros_adapter" value="ingest/registry.py&#xa;RosMsgAdapter registry&#xa;SystemStatsAdapter&#xa;TableDef / ColumnDef" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="390" y="520" width="180" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_query_engine" value="duckdb_engine.py&#xa;get_schema()&#xa;run_query()&#xa;_infer_columns()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="555" width="190" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_datasources_json" value="backend/data/datasources.json&#xa;数据源配置&#xa;ingest_status / ingest_info" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="935" y="180" width="210" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_duckdb" value="backend/data/duckdb/{id}.duckdb&#xa;业务表&#xa;system_stats / proto_metric&#xa;ctf_spans / perfetto_slices" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="935" y="365" width="210" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_meta" value="_pv_table_meta&#xa;table_kind&#xa;parent_table / join_key&#xa;dimension_keys&#xa;default_metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="935" y="555" width="210" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_ds_pages" value="pages/datasources/*&#xa;DatasourcesPage&#xa;DatasourceFormPage&#xa;插件表单创建数据源" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="1250" y="170" width="280" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_plugins" value="plugins/index.ts&#xa;PLUGINS&#xa;type -&gt; DatasourceForm&#xa;type -&gt; QueryPanel&#xa;capabilities / defaultVisualizations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1250" y="315" width="280" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_explorer" value="pages/explorer/index.tsx&#xa;ExplorerPage&#xa;getPlugin(current.plugin_type)&#xa;&lt;plugin.QueryPanel /&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="1250" y="485" width="280" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_sqlgraph" value="components/SqlGraph&#xa;SqlGraph&#xa;getDatasourceSchema()&#xa;runSqlQuery()&#xa;sqlBuilder.ts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1250" y="630" width="135" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_viz" value="visualizations/*&#xa;selectViz(meta)&#xa;TimeseriesViz&#xa;TimelineViz&#xa;TableViz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1400" y="630" width="130" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_doc_add_format" value="docs/add_new_format.md&#xa;新增文件格式：&#xa;FormatImporter + TableDef + PLUGIN_META + 前端插件" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="930" width="420" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_doc_ros_msg" value="docs/add_new_ros2_msg.md&#xa;新增 ROS2 消息：&#xa;RosMsgAdapter + registry.register()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="560" y="930" width="390" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_doc_design" value="docs/design.md / docs/architecture.md&#xa;设计演进、阶段计划、类图与数据流" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="930" width="470" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e1" value="produces metrics" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d79b00;" parent="1" source="p1_monitors" target="p1_ros2_mcap" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e2" value="inspect / ingest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_ros2_mcap" target="p1_api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e3" value="inspect / ingest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_proto" target="p1_api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e4" value="inspect / ingest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_traces" target="p1_api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e5" value="PromQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_sqlite" target="p1_api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e6" value="capabilities" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_api" target="p1_store" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e7" value="dispatch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_api" target="p1_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e8" value="registered importers" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_registry" target="p1_importers" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e9" value="MCAP msg adapter" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_importers" target="p1_ros_adapter" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e10" value="write tables" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p1_importers" target="p1_duckdb" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e11" value="write_table_meta()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p1_importers" target="p1_meta" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e12" value="CRUD" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p1_store" target="p1_datasources_json" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e13" value="schema / SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_duckdb" target="p1_query_engine" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e14" value="meta" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p1_meta" target="p1_query_engine" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e15" value="HTTP services" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p1_ds_pages" target="p1_api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e16" value="plugin registry" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p1_plugins" target="p1_explorer" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e17" value="QueryPanel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p1_explorer" target="p1_sqlgraph" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e18" value="selectViz(meta)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p1_sqlgraph" target="p1_viz" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1_e19" value="schema / query responses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p1_query_engine" target="p1_sqlgraph" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="pulseview-backend" name="Page 2 - 后端 ingest / query 架构">
+        <mxGraphModel dx="871" dy="679" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1300" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="p2_title" value="后端 ingest / query 架构&#xa;能力声明 + FormatImporter 注册表 + DuckDB 自描述表" style="text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="430" y="20" width="840" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_api_bg" value="API 层 - backend/app/main.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="120" width="310" height="1000" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_store_bg" value="元信息层 - backend/app/store.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e2f0d9;strokeColor=#82b366;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="390" y="120" width="270" height="1000" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_ingest_bg" value="导入层 - backend/app/ingest" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="120" width="450" height="1000" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_storage_bg" value="DuckDB Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="1190" y="120" width="210" height="1000" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_query_bg" value="查询层 - backend/app/duckdb_engine.py" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="1440" y="120" width="230" height="1000" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_api_plugins" value="GET /api/datasource/plugins&#xa;返回 PLUGIN_META" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="175" width="250" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_api_ds" value="GET/POST/PUT/DELETE&#xa;/api/datasources&#xa;create/update 后按 ingest 能力自动 _try_ingest()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="275" width="250" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_api_inspect" value="GET /api/inspect&#xa;plugin_type + path&#xa;format_registry.get(type).inspect(path)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="410" width="250" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_api_ingest" value="POST /api/datasources/{id}/ingest&#xa;_try_ingest(ds_id, force)&#xa;required_settings 校验&#xa;ready 时可跳过" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="540" width="250" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_api_schema" value="GET /api/datasources/{id}/schema&#xa;get_schema(duckdb_path)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="700" width="250" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_api_sql" value="POST /api/sql/query&#xa;run_query(db_path, sql, limit)&#xa;仅允许 SELECT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="810" width="250" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_api_promql" value="POST /api/query_range&#xa;sqlite 插件 promql 能力&#xa;当前为 Prometheus matrix 占位响应" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="940" width="250" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_plugin_meta" value="PLUGIN_META&#xa;sqlite: promql&#xa;ros2_mcap: ingest/schema/sql&#xa;protobuf: ingest/schema/sql&#xa;ctf: ingest/schema/sql&#xa;perfetto: ingest/schema/sql" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e2f0d9;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="175" width="210" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_store" value="DatasourceStore&#xa;list/create/update/delete&#xa;duckdb_path(ds_id)&#xa;set_ingest_status()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e2f0d9;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="380" width="210" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_importer_protocol" value="ingest/importer.py&#xa;FormatImporter Protocol&#xa;format_type&#xa;required_settings()&#xa;inspect()&#xa;ingest()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="735" y="175" width="180" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_format_registry" value="FormatImporterRegistry&#xa;format_registry.register(importer)&#xa;get(format_type)&#xa;has(format_type)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="945" y="185" width="175" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_mcap_importer" value="mcap_importer.py&#xa;McapImporter&#xa;format_type = ros2_mcap&#xa;inspect_mcap()&#xa;ingest_mcap()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="735" y="365" width="180" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_proto_importer" value="proto_importer.py&#xa;ProtobufImporter&#xa;proto_schema.py&#xa;proto_metric / proto_metric_cores" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="365" width="180" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_ctf_importer" value="ctf_importer.py&#xa;CtfImporter&#xa;ctf_format.py / lttng_ctf.py&#xa;ctf_spans table_kind=span" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="735" y="525" width="180" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_perfetto_importer" value="perfetto_importer.py&#xa;PerfettoImporter&#xa;perfetto_tp.py&#xa;perfetto_slices table_kind=span" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="525" width="180" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_pipeline" value="pipeline.py&#xa;ingest_mcap()&#xa;mcap.reader + DecoderFactory&#xa;ros_msg_to_dict()&#xa;_stamp_from_msg()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="735" y="690" width="180" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_ros_registry" value="ingest/registry.py&#xa;RosMsgAdapter Protocol&#xa;registry.register(adapter)&#xa;TableDef / ColumnDef&#xa;IngestContext" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="940" y="685" width="180" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_system_adapter" value="adapters/system_stats.py&#xa;SystemStatsAdapter&#xa;tables()&#xa;flatten(msg, ctx)&#xa;主表 + 子表 long format" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="840" y="870" width="190" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_datasources_file" value="datasources.json&#xa;id / name / plugin_type&#xa;settings&#xa;ingest_status / ingest_info" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="1215" y="235" width="160" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_duckdb_tables" value="{id}.duckdb&#xa;业务表&#xa;system_stats*&#xa;proto_metric*&#xa;ctf_spans&#xa;perfetto_slices" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1215" y="475" width="160" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_table_meta" value="_pv_table_meta&#xa;write_table_meta()&#xa;read_table_meta()&#xa;table_kind&#xa;parent_table / join_key&#xa;dimension_keys&#xa;default_metrics&#xa;time_column" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1215" y="715" width="160" height="190" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_get_schema" value="get_schema(db_path, msg_type)&#xa;优先 read_table_meta()&#xa;旧库回退 _adapter_meta()&#xa;返回 tables + columns + 元数据" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1465" y="260" width="180" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_run_query" value="run_query(db_path, sql, limit)&#xa;SELECT * FROM (query) LIMIT n&#xa;columns / rows / meta" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1465" y="520" width="180" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_infer" value="_infer_columns()&#xa;time_column: _time/time/timestamp/ts&#xa;dur_column: _dur&#xa;dimension_columns&#xa;value_columns" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="1465" y="700" width="180" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_serialize" value="_serialize_row()&#xa;datetime -&gt; isoformat&#xa;large int epoch heuristic&#xa;&gt; 1e12 -&gt; /1e6" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="1465" y="890" width="180" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e1" value="capability check" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p2_api_ds" target="p2_plugin_meta" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e2" value="CRUD / path / status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p2_api_ds" target="p2_store" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e3" value="persist" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p2_store" target="p2_datasources_file" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e4" value="get importer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p2_api_inspect" target="p2_format_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e5" value="_try_ingest dispatch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p2_api_ingest" target="p2_format_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e6" value="implements" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#82b366;" parent="1" source="p2_mcap_importer" target="p2_importer_protocol" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e7" value="register" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#82b366;" parent="1" source="p2_mcap_importer" target="p2_format_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e8" value="register" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#82b366;" parent="1" source="p2_proto_importer" target="p2_format_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e9" value="register" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#82b366;" parent="1" source="p2_ctf_importer" target="p2_format_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e10" value="register" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#82b366;" parent="1" source="p2_perfetto_importer" target="p2_format_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e11" value="MCAP only" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p2_mcap_importer" target="p2_pipeline" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e12" value="registry.get(msg_type)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p2_pipeline" target="p2_ros_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e13" value="flatten()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p2_ros_registry" target="p2_system_adapter" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e14" value="CREATE / DELETE / INSERT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p2_proto_importer" target="p2_duckdb_tables" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e15" value="INSERT rows" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p2_system_adapter" target="p2_duckdb_tables" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e16" value="span rows" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p2_ctf_importer" target="p2_duckdb_tables" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e17" value="span rows" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p2_perfetto_importer" target="p2_duckdb_tables" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e18" value="write_table_meta(conn, tables)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p2_importer_protocol" target="p2_table_meta" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e19" value="schema endpoint" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p2_api_schema" target="p2_get_schema" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e20" value="read" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p2_table_meta" target="p2_get_schema" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e21" value="SQL endpoint" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p2_api_sql" target="p2_run_query" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e22" value="SELECT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p2_duckdb_tables" target="p2_run_query" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e23" value="columns + rows" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p2_run_query" target="p2_infer" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2_e24" value="serialize rows" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p2_infer" target="p2_serialize" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="pulseview-frontend" name="Page 3 - 前端 plugin / visualization 架构">
+        <mxGraphModel dx="871" dy="679" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="p3_title" value="前端 plugin / visualization 架构&#xa;数据源插件负责 Form 和 QueryPanel，图表注册表只看 query result meta" style="text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="20" width="1040" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_routes_bg" value="Pages / Routes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="120" width="260" height="880" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_plugins_bg" value="Plugin Registry - fronted/src/plugins" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="340" y="120" width="340" height="880" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_query_bg" value="Query Panels / Services / SqlGraph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="720" y="120" width="430" height="880" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_viz_bg" value="Visualization Registry - fronted/src/visualizations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="1190" y="120" width="470" height="880" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_layout" value="components/Layout&#xa;useAppContext()&#xa;datasources&#xa;defaultDatasource&#xa;reloadDatasources()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="175" width="200" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_ds_page" value="pages/datasources/index.tsx&#xa;DatasourcesPage&#xa;getPluginList()&#xa;添加 / 编辑 / 删除数据源" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="335" width="200" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_form_page" value="pages/datasources/Form.tsx&#xa;DatasourceFormPage&#xa;getPlugin(type)&#xa;plugin.DatasourceForm" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="490" width="200" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_explorer" value="pages/explorer/index.tsx&#xa;ExplorerPage&#xa;选择 datasource&#xa;getPlugin(current.plugin_type)&#xa;&lt;plugin.QueryPanel /&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="645" width="200" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_plugin_def" value="types/index.ts&#xa;PluginDefinition&#xa;type / name&#xa;queryLanguage&#xa;capabilities&#xa;defaultVisualizations&#xa;DatasourceForm&#xa;QueryPanel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="370" y="170" width="145" height="175" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_plugins" value="plugins/index.ts&#xa;PLUGINS&#xa;sqlite&#xa;ros2_mcap&#xa;protobuf&#xa;ctf&#xa;perfetto&#xa;getPlugin() / getPluginList()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="535" y="170" width="115" height="175" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_forms" value="DatasourceForm components&#xa;sqlite/Form.tsx&#xa;ros2_mcap/Form.tsx&#xa;protobuf/Form.tsx&#xa;ctf/Form.tsx&#xa;perfetto/Form.tsx&#xa;inspectSource(path, type)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+                    <mxGeometry x="370" y="405" width="280" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_query_panels" value="QueryPanel components&#xa;sqlite/QueryPanel.tsx -&gt; PromGraph&#xa;ros2_mcap/QueryPanel.tsx -&gt; SqlGraph&#xa;protobuf/QueryPanel.tsx -&gt; SqlGraph&#xa;ctf/QueryPanel.tsx -&gt; SqlGraph&#xa;perfetto/QueryPanel.tsx -&gt; SqlGraph" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="370" y="625" width="280" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_services" value="services/*&#xa;datasource.ts&#xa;mcap.ts inspectSource()&#xa;sql.ts getDatasourceSchema() / runSqlQuery() / ingestDatasource()&#xa;query.ts queryRange()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="750" y="170" width="360" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_sqlgraph" value="components/SqlGraph/index.tsx&#xa;SqlGraph&#xa;loadSchema()&#xa;buildPresets(schema)&#xa;executeQuery()&#xa;handleSchemaSelect()&#xa;handleReingest()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="750" y="365" width="170" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_sqlbuilder" value="components/SqlGraph/sqlBuilder.ts&#xa;buildSqlFromField()&#xa;buildSqlFromTable()&#xa;buildDefaultMetricSql()&#xa;span SQL: _time + _dur + dims + name&#xa;parent_table / join_key 驱动 JOIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="955" y="365" width="165" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_promgraph" value="components/PromGraph&#xa;PromQL 输入&#xa;queryRange()&#xa;TimeseriesChart / ResultTable" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="750" y="610" width="170" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_sql_timeseries" value="components/SqlGraph/SqlTimeseriesChart.tsx&#xa;rows -&gt; series&#xa;time / dimension / value columns" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="955" y="610" width="165" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_viz_types" value="visualizations/types.ts&#xa;VizDefinition&#xa;VizProps&#xa;VizMeta = SqlQueryResult.meta&#xa;accepts(meta)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1220" y="170" width="180" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_viz_registry" value="visualizations/registry.ts&#xa;registerViz(def)&#xa;getVizList()&#xa;selectViz(meta)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1430" y="170" width="190" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_viz_index" value="visualizations/index.ts&#xa;registerViz(timeseries)&#xa;registerViz(timeline)&#xa;registerViz(table)&#xa;Explorer imports &#39;@/visualizations&#39;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="1330" y="350" width="190" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_timeseries" value="TimeseriesViz.tsx&#xa;accepts: time_column + value_columns&#xa;wraps SqlTimeseriesChart" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1220" y="550" width="180" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_timeline" value="TimelineViz.tsx&#xa;accepts: time_column + dur_column&#xa;Canvas swimlane&#xa;drag zoom / hover tooltip&#xa;track = first dimension" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1430" y="540" width="190" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_table" value="TableViz.tsx&#xa;accepts: always true&#xa;Antd Table fallback&#xa;columns + rows" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1320" y="735" width="190" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e1" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p3_ds_page" target="p3_plugins" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e2" value="resolve form" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p3_form_page" target="p3_plugins" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e3" value="render QueryPanel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p3_explorer" target="p3_plugins" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e4" value="defines shape" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#9673a6;" parent="1" source="p3_plugin_def" target="p3_plugins" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e5" value="registers forms" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#9673a6;" parent="1" source="p3_plugins" target="p3_forms" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e6" value="registers panels" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#9673a6;" parent="1" source="p3_plugins" target="p3_query_panels" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e7" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p3_forms" target="p3_services" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e8" value="SQL panels" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p3_query_panels" target="p3_sqlgraph" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e9" value="sqlite panel" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p3_query_panels" target="p3_promgraph" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e10" value="schema/query/reingest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p3_sqlgraph" target="p3_services" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e11" value="generate SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p3_sqlgraph" target="p3_sqlbuilder" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e12" value="register definitions" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p3_viz_index" target="p3_viz_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e13" value="accepts(meta)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#d6b656;" parent="1" source="p3_viz_types" target="p3_viz_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e14" value="selectViz(result.meta)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p3_sqlgraph" target="p3_viz_registry" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e15" value="timeseries" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p3_viz_registry" target="p3_timeseries" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e16" value="timeline" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p3_viz_registry" target="p3_timeline" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e17" value="fallback" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p3_viz_registry" target="p3_table" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3_e18" value="wraps" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p3_timeseries" target="p3_sql_timeseries" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="pulseview-e2e" name="Page 4 - 端到端数据流">
+        <mxGraphModel dx="871" dy="679" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1350" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="p4_title" value="端到端数据流与扩展点&#xa;从原始文件到 DuckDB，再到 QueryPanel 和 Visualization" style="text;html=1;strokeColor=none;fillColor=none;fontSize=24;fontStyle=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="430" y="20" width="940" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_lane_src" value="1. Sources" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="130" width="250" height="620" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_lane_front_a" value="2. Data Source UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="330" y="130" width="250" height="620" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_lane_backend_ingest" value="3. Backend Inspect / Ingest" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="130" width="310" height="620" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_lane_storage" value="4. DuckDB Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="970" y="130" width="240" height="620" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_lane_front_b" value="5. Explorer / Visualization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="1250" y="130" width="500" height="620" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_ext_bg" value="Extension Points" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=16;verticalAlign=top;spacingTop=10;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="810" width="1710" height="360" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_sources" value="原始数据&#xa;ros2_mcap 文件&#xa;protobuf .pb&#xa;ctf trace 目录&#xa;perfetto trace 文件&#xa;sqlite 文件" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="210" width="190" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_monitor" value="monitors/system_stats&#xa;采集 CPU / MEM / NET / ROS node stats&#xa;可输出 ROS2 msg / MCAP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="440" width="190" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_add_source" value="DatasourcesPage&#xa;添加数据源&#xa;getPluginList()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="360" y="190" width="190" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_form" value="DatasourceFormPage&#xa;plugin.DatasourceForm&#xa;settings 写入 mcap.* / proto.* / ctf.* / perfetto.* / sqlite.*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="360" y="325" width="190" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_inspect_btn" value="扫描按钮&#xa;inspectSource(path, pluginType)&#xa;GET /api/inspect" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="360" y="505" width="190" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_create" value="保存&#xa;createDatasource()&#xa;POST /api/datasources" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="360" y="640" width="190" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_api_inspect" value="main.py inspect_source()&#xa;format_registry.has(plugin_type)&#xa;importer.inspect(path)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="650" y="190" width="250" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_try_ingest" value="main.py _try_ingest()&#xa;PLUGIN_META capabilities&#xa;required_settings()&#xa;store.set_ingest_status()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="650" y="350" width="250" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_importers" value="FormatImporter.ingest()&#xa;McapImporter -&gt; pipeline + RosMsgAdapter&#xa;ProtobufImporter -&gt; proto_schema&#xa;CtfImporter -&gt; ctf_format / lttng_ctf&#xa;PerfettoImporter -&gt; perfetto_tp" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="650" y="525" width="250" height="155" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_duck_tables" value="DuckDB 业务表&#xa;timeseries: _time + value columns&#xa;child tables: msg_id + idx + dimensions&#xa;span: _time + _dur + track + name" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="995" y="250" width="190" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_meta" value="_pv_table_meta&#xa;TableDef 持久化&#xa;table_kind&#xa;parent_table / join_key&#xa;dimension_keys&#xa;default_metrics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="995" y="465" width="190" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_explorer" value="ExplorerPage&#xa;选择数据源&#xa;getPlugin(type)&#xa;plugin.QueryPanel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="180" width="200" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_schema" value="SqlGraph.loadSchema()&#xa;GET /api/datasources/{id}/schema&#xa;get_schema() 读取 _pv_table_meta" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="1510" y="180" width="210" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_sqlgen" value="sqlBuilder.ts&#xa;buildDefaultMetricSql()&#xa;buildSqlFromField()&#xa;parent_table / join_key JOIN&#xa;span 查询 _time, _dur, dims, name" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="350" width="200" height="145" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_query" value="SqlGraph.executeQuery()&#xa;POST /api/sql/query&#xa;run_query() 返回&#xa;columns + rows + meta" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1510" y="350" width="210" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_selectviz" value="selectViz(result.meta)&#xa;time + values -&gt; TimeseriesViz&#xa;time + _dur -&gt; TimelineViz&#xa;always -&gt; TableViz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1280" y="560" width="200" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_render" value="Render result&#xa;TimeseriesViz / SqlTimeseriesChart&#xa;TimelineViz canvas swimlanes&#xa;TableViz Antd Table" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1510" y="560" width="210" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_ext_format" value="新增文件格式&#xa;1. backend/app/ingest/importers/your_importer.py&#xa;2. 实现 FormatImporter: format_type / required_settings / inspect / ingest&#xa;3. 设计 TableDef，写业务表和 _pv_table_meta&#xa;4. importers/__init__.py 触发 register&#xa;5. store.PLUGIN_META 增加 capabilities&#xa;6. fronted/src/plugins/your_type 注册 Form + QueryPanel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="80" y="870" width="500" height="235" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_ext_ros" value="新增 ROS2 消息类型&#xa;1. backend/app/ingest/adapters/your_msg.py&#xa;2. 实现 RosMsgAdapter: msg_type / tables() / flatten()&#xa;3. registry.register(YourMsgAdapter())&#xa;4. adapters/__init__.py import&#xa;5. MCAP 数据源填写 mcap.msg_type&#xa;6. 前端通常无需改图表，Schema + sqlBuilder 自动 JOIN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="640" y="870" width="500" height="235" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_ext_viz" value="新增可视化组件&#xa;1. fronted/src/visualizations/YourViz.tsx&#xa;2. 实现 VizDefinition.accepts(meta)&#xa;3. visualizations/index.ts registerViz(def)&#xa;4. 图表只消费 columns / rows / meta&#xa;5. 不依赖具体 plugin_type" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="1200" y="870" width="500" height="235" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e1" value="record / export" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d79b00;" parent="1" source="p4_monitor" target="p4_sources" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e2" value="choose type" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_sources" target="p4_add_source" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e3" value="render plugin form" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_add_source" target="p4_form" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e4" value="scan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_form" target="p4_inspect_btn" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e5" value="GET /api/inspect" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p4_inspect_btn" target="p4_api_inspect" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e6" value="save settings" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_form" target="p4_create" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e7" value="auto ingest if capability ingest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p4_create" target="p4_try_ingest" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e8" value="dispatch by plugin_type" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#82b366;" parent="1" source="p4_try_ingest" target="p4_importers" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e9" value="CREATE / INSERT rows" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p4_importers" target="p4_duck_tables" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e10" value="write_table_meta()" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#b85450;" parent="1" source="p4_importers" target="p4_meta" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e11" value="select datasource" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_create" target="p4_explorer" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e12" value="schema" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_explorer" target="p4_schema" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e13" value="read meta" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_meta" target="p4_schema" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e14" value="build SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_schema" target="p4_sqlgen" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e15" value="execute SELECT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_sqlgen" target="p4_query" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e16" value="query DuckDB" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#6c8ebf;" parent="1" source="p4_duck_tables" target="p4_query" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e17" value="columns / rows / meta" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p4_query" target="p4_selectviz" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e18" value="render active tab" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#d6b656;" parent="1" source="p4_selectviz" target="p4_render" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e19" value="must register" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#9673a6;" parent="1" source="p4_ext_format" target="p4_importers" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e20" value="MCAP message extension" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#9673a6;" parent="1" source="p4_ext_ros" target="p4_importers" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p4_e21" value="registerViz" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;dashed=1;strokeColor=#9673a6;" parent="1" source="p4_ext_viz" target="p4_selectviz" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

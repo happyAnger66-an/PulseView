@@ -1,148 +1,210 @@
 # PulseView
 
-监控性能数据的轻量可视化工具。通过可插拔的格式导入器把多种数据（MCAP、Protobuf、CTF）
-统一导入 DuckDB 后用 SQL 探索，并按数据形态自动选择折线、泳道（Timeline）或表格展示；
-另支持通过 PromQL 查询 SQLite 时序库。
+PulseView 是一个轻量级监控性能数据可视化工具。它将 MCAP、Protobuf、CTF、Perfetto 等数据通过可插拔导入器统一写入 DuckDB，再用 SQL 探索，并按查询结果自动展示为时序图、Timeline 泳道图或表格。
 
-## 支持的数据源类型
+SQLite 数据源走 PromQL 查询入口，适合兼容已有时序库。
 
-| plugin_type | 名称 | 输入 | 能力 (capabilities) | 默认图表 |
-|-------------|------|------|---------------------|----------|
-| `ros2_mcap` | ROS2 MCAP | MCAP 文件 + Topic + Msg 类型 | ingest / schema / sql | 折线 / 表格 |
-| `protobuf` | Protobuf | length-delimited `.pb` 文件 + 消息类型 | ingest / schema / sql | 折线 / 表格 |
-| `ctf` | CTF Trace | CTF trace 目录（内置最小 CTF，或真实 LTTng / `ros2 trace`） | ingest / schema / sql | Timeline / 表格 |
-| `perfetto` | Perfetto Trace | Perfetto trace 文件（`.perfetto-trace` / `.pftrace` / Chrome JSON 等） | ingest / schema / sql | Timeline / 表格 |
-| `sqlite` | SQLite | SQLite 文件路径 | promql | 折线 |
+## 核心能力
 
-> `ingest/schema/sql` 类数据源导入 DuckDB 后用 SQL 查询；`sqlite` 走 PromQL 查询。
-> CTF 自动识别内置最小格式与真实 LTTng/ros2_tracing；读取真实 LTTng 需系统 `bt2`，详见 [docs/ros2_tracing.md](docs/ros2_tracing.md)。
-> Perfetto 数据源通过 Trace Processor 解析，需 `pip install perfetto` + `trace_processor_shell`，详见 [docs/support_perfetto.md](docs/support_perfetto.md)。
-> 能力由后端 `PLUGIN_META` 声明，前端据此显隐 UI。
+- 多格式接入：`ros2_mcap`、`protobuf`、`ctf`、`perfetto`、`sqlite`
+- 统一存储：导入型数据源写入每数据源一个 DuckDB 文件
+- 自描述 schema：`_pv_table_meta` 保存表结构语义与可视化元数据
+- 自动可视化：根据查询结果 `meta` 选择时序图、Timeline 或表格
+- 插件化扩展：后端 `FormatImporter`，前端 `PLUGINS` / `VizRegistry`
+- ROS2 消息扩展：MCAP 内部通过 `RosMsgAdapter` 展平新消息类型
 
-## 支持的图表类型
+## 数据源
 
-图表选择只依赖**查询结果的 `meta`**，与数据来自哪种格式无关：
+| plugin_type | 名称 | 输入 | 查询能力 | 默认图表 |
+|-------------|------|------|----------|----------|
+| `ros2_mcap` | ROS2 MCAP | MCAP 文件 + Topic + Msg 类型 | SQL | 时序图 / 表格 |
+| `protobuf` | Protobuf | length-delimited `.pb` + 消息类型 | SQL | 时序图 / 表格 |
+| `ctf` | CTF Trace | CTF trace 目录 | SQL | Timeline / 表格 |
+| `perfetto` | Perfetto Trace | `.perfetto-trace` / `.pftrace` / Chrome JSON 等 | SQL | Timeline / 表格 |
+| `sqlite` | SQLite | SQLite 文件路径 | PromQL | 时序图 |
 
-| viz type | 名称 | 适用条件 (meta) | 说明 |
-|----------|------|-----------------|------|
-| `timeseries` | 图表 | 有 `time_column` 且有 `value_columns` | uPlot 多线时序图 + 统计表（avg/p50/p99）+ 图例显隐 |
-| `timeline` | Timeline | 有 `time_column` 且有 `dur_column` | canvas 泳道（swimlane）渲染，拖拽框选缩放、双击重置、hover tooltip |
-| `table` | 表格 | 任意结果 | 原始查询结果表 |
+说明：
+
+- `ros2_mcap` / `protobuf` / `ctf` / `perfetto` 会导入 DuckDB。
+- `ctf` 支持内置最小 CTF 与真实 LTTng / `ros2 trace`。真实 LTTng 读取需 `bt2`。
+- `perfetto` 依赖 Perfetto Trace Processor，详见 [docs/support_perfetto.md](docs/support_perfetto.md)。
+
+## 图表类型
+
+| viz type | 适用条件 | 说明 |
+|----------|----------|------|
+| `timeseries` | 有 `time_column` 和 `value_columns` | uPlot 多线时序图，带统计表 |
+| `timeline` | 有 `time_column` 和 `dur_column` | Canvas 泳道图，支持框选缩放与 hover |
+| `table` | 任意查询结果 | 原始结果表 |
 
 ## 快速预览
 
 #### 设置数据源
+
 ![设置数据源](./img/data_sources.png)
 
 #### 查看监控指标
+
 ![查看监控指标](./img/metrics.png)
 
-## 目录
+## 目录结构
 
-```
+```text
 PulseView/
-├── backend/     FastAPI + DuckDB + 格式导入器（MCAP / Protobuf / CTF）
-├── fronted/     React + Vite + uPlot（折线）+ canvas（Timeline）
-└── docs/        架构与扩展文档
+├── backend/     FastAPI + DuckDB + 格式导入器
+├── fronted/     React + Vite + Ant Design + 图表可视化
+├── monitors/    ROS/C++ 系统指标采集与消息定义
+├── docs/        架构、设计与扩展文档
+└── e2e/         Playwright 端到端测试
 ```
 
-相关文档：[架构图](docs/architecture.md) · [整体设计](docs/design.md) · [扩展新格式](docs/add_new_format.md) · [扩展 ROS 消息](docs/add_new_ros2_msg.md)
+## 快速启动
 
-## 后端
+### 1. 启动后端
 
 ```bash
 cd backend
-pip install -r requirements.txt
-python run.py          # http://0.0.0.0:8080
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python run.py
 ```
 
-> 可选：读取**真实 LTTng / ros2_tracing CTF** 需系统包 `bt2`（babeltrace2 Python 绑定，
-> 无法 pip 安装）。`sudo apt install babeltrace2 python3-bt2`，再用
-> `python3 -m venv --system-site-packages .venv` 重建虚拟环境使其可见。未安装仅影响真实
-> LTTng 读取，内置最小 CTF 与其它格式不受影响。详见 [docs/ros2_tracing.md](docs/ros2_tracing.md)。
+后端默认监听：`http://0.0.0.0:8080`
 
-主要 API：
+可选依赖：
 
-| 接口 | 说明 |
-|------|------|
-| `GET /api/datasource/plugins` | 列出数据源插件类型及能力 |
-| `GET/POST /api/datasources` | 数据源 CRUD |
-| `GET /api/inspect?plugin_type=&path=` | 扫描原始文件（按格式分派，返回 topic/区间信息） |
-| `POST /api/datasources/{id}/ingest` | 触发导入（MCAP / Protobuf / CTF） |
-| `GET /api/datasources/{id}/schema` | DuckDB 表结构 + 可视化元数据 |
-| `POST /api/sql/query` | 执行 SQL 查询（仅 SELECT） |
-| `POST /api/query_range` | PromQL 范围查询（SQLite） |
+- 真实 LTTng / `ros2 trace` CTF：安装 `babeltrace2 python3-bt2`，并用 `--system-site-packages` 创建 venv。
+- Perfetto：安装 `perfetto` Python 包，并保证 `trace_processor_shell` 可用。
 
-数据与 DuckDB 文件保存在 `backend/data/`。
-
-## 前端
+### 2. 启动前端
 
 ```bash
 cd fronted
 npm install
-npm run dev            # http://localhost:8766，代理 /api → :8080
+npm run dev
 ```
 
-无后端时可 mock 启动：`USE_MOCK=true npm run dev`
+前端默认监听：`http://localhost:8766`，并代理 `/api` 到后端 `:8080`。
+
+无后端时可启用 mock：
+
+```bash
+cd fronted
+USE_MOCK=true npm run dev
+```
 
 ## 使用流程
 
-1. 启动后端与前端
-2. **数据源管理** → 添加数据源
-   - **ROS2 MCAP**：填写 MCAP 路径、Topic、Msg 类型（如 `system_stats_interfaces/msg/SystemStats`），保存后自动导入
-   - **Protobuf**：填写 `.pb` 路径并扫描，选择消息类型，保存后自动导入
-   - **CTF Trace**：填写 trace 目录路径并扫描，保存后自动导入
-   - **SQLite**：填写数据库路径
-3. **数据探索** → 选择数据源
-   - DuckDB 类（MCAP/Protobuf/CTF）：左侧 Schema 点字段生成 SQL，或点预设按钮，Ctrl+Enter 执行；结果按形态自动切换折线 / Timeline / 表格
-   - SQLite：输入 PromQL 查询
+1. 启动后端和前端。
+2. 进入“数据源管理”，添加数据源：
+   - ROS2 MCAP：填写 MCAP 路径、Topic、Msg 类型。
+   - Protobuf：填写 `.pb` 路径，扫描并选择消息类型。
+   - CTF Trace：填写 trace 目录并扫描。
+   - Perfetto Trace：填写 trace 文件并扫描。
+   - SQLite：填写 SQLite 文件路径。
+3. 保存后，具备 `ingest` 能力的数据源会自动导入 DuckDB。
+4. 进入“数据探索”，选择数据源：
+   - DuckDB 类数据源：查看 Schema、点击字段生成 SQL、或使用预设查询。
+   - SQLite：输入 PromQL 查询。
+5. 查询结果会自动选择图表：时序数据用折线图，span 数据用 Timeline，其它结果用表格。
 
-## 扩展
+## 主要 API
 
-- **新增数据格式**（如新的二进制/trace 格式）：实现 `FormatImporter` + `TableDef`，注册到 `format_registry`，并在 `PLUGIN_META` 声明能力。详见 [docs/add_new_format.md](docs/add_new_format.md)。
-- **为 MCAP 新增 ROS 消息类型**：在 `backend/app/ingest/adapters/` 新增 Adapter（声明 `dimension_keys`、`default_metrics`）并注册到 `registry`。详见 [docs/add_new_ros2_msg.md](docs/add_new_ros2_msg.md)。
-- **区间/trace → Timeline**：表设 `table_kind="span"` 并含 `_time` + `_dur` 列，前端自动启用泳道视图。
+| 接口 | 说明 |
+|------|------|
+| `GET /api/datasource/plugins` | 列出数据源插件及能力 |
+| `GET /api/datasources` | 列出数据源 |
+| `POST /api/datasources` | 创建数据源，必要时自动导入 |
+| `PUT /api/datasources/{id}` | 更新数据源 |
+| `DELETE /api/datasources/{id}` | 删除数据源与 DuckDB 文件 |
+| `GET /api/inspect?plugin_type=&path=` | 扫描原始文件或 trace |
+| `POST /api/datasources/{id}/ingest` | 手动重新导入 |
+| `GET /api/datasources/{id}/schema` | 返回 DuckDB schema 与可视化元数据 |
+| `POST /api/sql/query` | 执行 SELECT SQL |
+| `POST /api/query_range` | PromQL 范围查询 |
+
+数据默认保存在 `backend/data/`：
+
+- `datasources.json`：数据源配置与导入状态
+- `duckdb/{id}.duckdb`：每个数据源对应的 DuckDB 文件
+
+## 架构与扩展
+
+推荐先看：
+注：需要安装 draw.io插件查阅
+- [docs/pulseview_architecture.drawio](docs/pulseview_architecture.drawio)：draw.io 架构图
+- [docs/architecture.md](docs/architecture.md)：类图与端到端流程图
+- [docs/design.md](docs/design.md)：多格式扩展设计
+- [docs/add_new_format.md](docs/add_new_format.md)：新增数据格式
+- [docs/add_new_ros2_msg.md](docs/add_new_ros2_msg.md)：新增 ROS2 消息类型
+- [docs/ros2_tracing.md](docs/ros2_tracing.md)：LTTng / ros2_tracing
+- [docs/support_perfetto.md](docs/support_perfetto.md)：Perfetto Trace 支持
+
+### 新增数据格式
+
+最小改动：
+
+1. 实现 `backend/app/ingest/importers/your_importer.py`。
+2. 实现 `FormatImporter`：`format_type`、`required_settings()`、`inspect()`、`ingest()`。
+3. 用 `TableDef` 声明表结构，并调用 `write_table_meta()`。
+4. 在 `backend/app/ingest/importers/__init__.py` import 以触发注册。
+5. 在 `backend/app/store.py` 的 `PLUGIN_META` 增加能力声明。
+6. 在 `fronted/src/plugins/<type>/` 增加表单和查询面板，并注册到 `PLUGINS`。
+
+### 新增 ROS2 消息类型
+
+最小改动：
+
+1. 在 `backend/app/ingest/adapters/` 新增 Adapter。
+2. 实现 `RosMsgAdapter`：`msg_type`、`tables()`、`flatten()`。
+3. 调用 `registry.register(YourAdapter())`。
+4. 在 `backend/app/ingest/adapters/__init__.py` import 以触发注册。
+
+前端通常无需改动：只要表包含 `_time`、维度列和数值列，现有图表即可复用。
 
 ## 测试
 
-测试样本文件默认放在仓库同级的 `../test2/` 目录，可用环境变量覆盖路径：
+### 测试样本
 
-| 格式 | 样本 | 生成方式 | 环境变量 |
-|------|------|----------|----------|
-| MCAP | `../test2/test2_0.mcap`（Topic `/slave/system_stats`） | 外部提供 | `PULSEVIEW_TEST_MCAP` |
+样本默认放在仓库同级目录 `../test2/`，可通过环境变量覆盖：
+
+| 格式 | 默认样本 | 生成方式 | 环境变量 |
+|------|----------|----------|----------|
+| MCAP | `../test2/test2_0.mcap` | 外部提供 | `PULSEVIEW_TEST_MCAP` |
 | Protobuf | `../test2/proto_sample.pb` | `python backend/scripts/gen_proto_sample.py` | `PULSEVIEW_TEST_PROTO` |
-| CTF（内置最小） | `../test2/ctf_sample/` | `python backend/scripts/gen_ctf_sample.py` | `PULSEVIEW_TEST_CTF` |
-| CTF（真实 LTTng） | `ros2 trace` 录制目录 | 需 ROS 2 + lttng-tools，见 [docs/ros2_tracing.md](docs/ros2_tracing.md) | — |
+| CTF | `../test2/ctf_sample/` | `python backend/scripts/gen_ctf_sample.py` | `PULSEVIEW_TEST_CTF` |
 | Perfetto | `../test2/perfetto_sample.json` | `python backend/scripts/gen_perfetto_sample.py` | `PULSEVIEW_TEST_PERFETTO` |
 
-> LTTng 读取分支的单测（`tests/test_lttng_ctf.py`）内置一个 bt2 可解析的「LTTng 形态」
-> CTF 夹具，无需安装 lttng-tools/ROS 即可运行；未装 `bt2` 时该用例自动 skip。
-
-### 后端单元 / 集成测试
+### 后端测试
 
 ```bash
 cd backend
-python3 -m venv .venv                       # 如需跑真实 LTTng 用例，改用 --system-site-packages
+python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt -r requirements-dev.txt
 .venv/bin/python -m pytest tests -q
 ```
 
-覆盖：Adapter flatten、DuckDB 列推断（含 `_dur`）、`_pv_table_meta` 元数据、各 Importer（MCAP/Protobuf/CTF）的 ingest + Schema + SQL 查询，以及 LTTng CTF 解析与内置/LTTng 格式自动分派（`tests/test_lttng_ctf.py`，缺 `bt2` 时 skip）。
+覆盖范围：
 
-### E2E 测试（Playwright）
+- `FormatImporter` 注册与导入
+- `RosMsgAdapter` flatten
+- DuckDB schema 与 SQL 查询
+- `_pv_table_meta` 元数据
+- CTF / Protobuf / Perfetto 相关导入逻辑
 
-自动启动隔离后端（`e2e/.data`）与前端 dev server，覆盖 API 与 UI 核心流程。
+### E2E 测试
 
 ```bash
-# 项目根目录
 npm install
-npx playwright install chromium   # postinstall 已包含，首次需联网
+npx playwright install chromium
 npm run test:e2e
 ```
 
-| 用例文件 | 覆盖 |
-|---------|------|
-| `e2e/tests/backend-api.spec.ts` | 插件列表、MCAP/Protobuf/CTF 导入、Schema 元数据、SQL 查询、非法 SQL 拒绝 |
-| `e2e/tests/explorer-ui.spec.ts` | 预设查询、时序图、统计表、图例显隐、表格切换 |
-| `e2e/tests/timeline-ui.spec.ts` | CTF span 数据的 Timeline 泳道渲染 |
-| `e2e/tests/datasource-ui.spec.ts` | 数据源列表、页面导航 |
+E2E 覆盖：
+
+- 数据源列表与页面导航
+- 后端 API 基本流程
+- Schema 预设查询与 SQL 查询
+- 时序图、统计表、表格切换
+- CTF span 数据的 Timeline 渲染
+
