@@ -1,0 +1,26 @@
+# samples/ 本地生成物 — 源码与脚本可提交，构建/trace 输出不入库
+
+# ROS 2 colcon / ament 工作区
+**/build/
+**/install/
+**/log/
+
+# ros2 trace / LTTng 录制目录（体积大、每次运行不同）
+**/traces/
+
+# CMake / colcon 编译产物
+**/*.o
+**/*.a
+**/*.so
+**/*.dylib
+**/trace_demo_node
+
+# verify_trace.py / 脚本临时 DuckDB
+**/*.duckdb
+
+# Python 缓存
+**/__pycache__/
+**/*.py[cod]
+
+# 编辑器 / 工具缓存
+**/.cache/

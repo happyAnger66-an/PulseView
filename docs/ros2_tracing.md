@@ -36,15 +36,48 @@ python3 -m venv --system-site-packages .venv
 
 ## 二、生成真实 ros2_tracing trace（目标 B，需要 ROS 2）
 
+依赖：
+
 ```bash
 sudo apt install lttng-tools liblttng-ust-dev
-# 安装 ROS 2 与 ros2_tracing 后：
-ros2 trace start my_session            # 启动会话（默认采集 ros2:* UST 事件）
-# 另一终端运行你的 ROS 2 节点……
-ros2 trace stop                        # 停止，trace 落到 ~/.ros/tracing/my_session
+# ROS 2 Jazzy 已安装 tracetools / ros2trace 即可
 ```
 
-将该目录作为 CTF 数据源的 `ctf.path` 导入即可。
+### 一键录制 + 验证（推荐）
+
+仓库自带 C++ 测试节点（**必须用 rclcpp**：Python `rclpy` 不产生 `ros2:callback_*` 事件）：
+
+```bash
+cd PulseView/samples/ros2_trace_demo
+./record_and_verify.sh
+```
+
+脚本会：
+
+1. 编译 `trace_demo_node`（timer + pub/sub 回调）
+2. `ros2 trace start` → 运行节点 5s → `ros2 trace stop`
+3. 调用 PulseView `lttng_ctf` + `CtfImporter` 校验（期望 ≥10 spans）
+
+trace 输出目录：`samples/ros2_trace_demo/traces/pv_trace_demo`  
+在 PulseView 建 **CTF Trace** 数据源，`ctf.path` 填该目录即可 Timeline 查看。
+
+环境变量（可选）：
+
+| 变量 | 默认 | 说明 |
+| --- | --- | --- |
+| `PV_TRACE_SESSION` | `pv_trace_demo` | LTTng 会话名 |
+| `PV_TRACE_DURATION_SEC` | `5` | 节点运行秒数 |
+
+### 手动录制
+
+```bash
+source /opt/ros/jazzy/setup.bash
+ros2 trace start my_session            # 启动会话（默认采集 ros2:* UST 事件）
+# 另一终端运行 rclcpp 节点（如 ./samples/ros2_trace_demo/.../trace_demo_node）
+ros2 trace stop my_session             # 停止，trace 落到 traces/my_session 或 ~/.ros/tracing/
+```
+
+将该 session 目录作为 CTF 数据源的 `ctf.path` 导入即可。
 
 ## 解析细节
 
@@ -59,3 +92,10 @@ ros2 trace stop                        # 停止，trace 落到 ~/.ros/tracing/my
 
 缺少 `bt2` 时：若目录被识别为真实 LTTng（metadata 无内置标记），`ingest` 会抛出
 明确错误提示安装；内置最小 CTF 与其它格式不受影响。
+
+## 三、重要说明：callback span 来自 rclcpp
+
+PulseView 当前从 `ros2:callback_start` / `ros2:callback_end` / `ros2:rclcpp_callback_register`
+配对生成 Timeline span。**这些 tracepoint 仅由 rclcpp（C++）注入**；Python `rclpy` 节点
+只会产生 `ros2:rcl_*` / `ros2:rmw_*` 等级别事件，无法被现有解析器转成 span。
+测试时请使用 C++ 节点（见 `samples/ros2_trace_demo`）。

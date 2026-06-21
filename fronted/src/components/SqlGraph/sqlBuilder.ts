@@ -102,12 +102,27 @@ export function isNumericColumnType(type: string): boolean {
   return ['INT', 'FLOAT', 'DOUBLE', 'DECIMAL', 'REAL', 'UINT', 'HUGE'].some((k) => upper.includes(k));
 }
 
-/** span 类表：生成 timeline 友好的区间查询（_time + _dur + 维度 + name） */
+/** span 类表：拉全列，Timeline 才能分泳道并在详情里展示 meta */
 function buildSpanSql(table: SchemaTable): string {
-  const cols = [TIME_COLUMN, '_dur', ...(table.dimension_keys ?? [])];
-  const hasName = table.columns.some((c) => c.name === 'name');
-  if (hasName && !cols.includes('name')) cols.push('name');
-  return `SELECT ${cols.join(', ')} FROM ${table.name} ORDER BY ${TIME_COLUMN}`;
+  const names = table.columns.map((c) => c.name);
+  const priority = [
+    TIME_COLUMN,
+    '_dur',
+    ...(table.dimension_keys ?? []),
+    'name',
+    'category',
+    'span_id',
+    'cpu_id',
+    'depth',
+  ];
+  const ordered: string[] = [];
+  for (const col of priority) {
+    if (names.includes(col) && !ordered.includes(col)) ordered.push(col);
+  }
+  for (const col of names) {
+    if (!ordered.includes(col)) ordered.push(col);
+  }
+  return `SELECT ${ordered.join(', ')} FROM ${table.name} ORDER BY ${TIME_COLUMN}`;
 }
 
 /** 根据表元数据生成默认指标查询；不传 metrics 时使用全部 default_metrics */

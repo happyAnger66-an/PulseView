@@ -58,6 +58,9 @@ fronted/coverage/
 # Backend runtime data (DuckDB, datasource metadata)
 backend/data/
 
+# samples/ 本地构建与 trace 输出（详见 samples/.gitignore）
+samples/**/traces/
+
 # E2E / Playwright
 e2e/.data/
 e2e/test-results/

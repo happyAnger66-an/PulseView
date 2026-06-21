@@ -172,7 +172,8 @@ USE_MOCK=true npm run dev
 |------|----------|----------|----------|
 | MCAP | `../test2/test2_0.mcap` | 外部提供 | `PULSEVIEW_TEST_MCAP` |
 | Protobuf | `../test2/proto_sample.pb` | `python backend/scripts/gen_proto_sample.py` | `PULSEVIEW_TEST_PROTO` |
-| CTF | `../test2/ctf_sample/` | `python backend/scripts/gen_ctf_sample.py` | `PULSEVIEW_TEST_CTF` |
+| CTF（内置最小） | `../test2/ctf_sample/` | `python backend/scripts/gen_ctf_sample.py` | `PULSEVIEW_TEST_CTF` |
+| CTF（真实 LTTng） | `samples/ros2_trace_demo/traces/pv_trace_demo/` | `samples/ros2_trace_demo/record_and_verify.sh`（需 ROS 2 Jazzy + lttng-tools） | — |
 | Perfetto | `../test2/perfetto_sample.json` | `python backend/scripts/gen_perfetto_sample.py` | `PULSEVIEW_TEST_PERFETTO` |
 
 ### 后端测试
