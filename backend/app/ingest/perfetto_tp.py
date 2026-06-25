@@ -59,18 +59,33 @@ ORDER BY s.ts
 def shell_path() -> str | None:
     """定位 ``trace_processor_shell`` 二进制：环境变量 > PATH；找不到返回 None。"""
     env = os.environ.get("PULSEVIEW_TP_SHELL")
-    if env and Path(env).is_file():
-        return env
-    return shutil.which("trace_processor_shell")
+    if env:
+        p = Path(env)
+        if p.is_file() and os.access(p, os.X_OK):
+            return str(p)
+    found = shutil.which("trace_processor_shell")
+    if found:
+        return found
+    return None
+
+
+def missing_dependency() -> str | None:
+    """若依赖未就绪，返回人类可读原因；否则返回 None。"""
+    try:
+        import perfetto.trace_processor  # noqa: F401
+    except ImportError:
+        return "未安装 Python 包 perfetto（请在 backend 虚拟环境中执行 `pip install perfetto`）"
+    if shell_path() is None:
+        return (
+            "未找到 trace_processor_shell 可执行文件"
+            "（请安装后放入 PATH，或设置环境变量 PULSEVIEW_TP_SHELL 指向其二进制路径）"
+        )
+    return None
 
 
 def is_available() -> bool:
     """``perfetto`` 库与 ``trace_processor_shell`` 是否都就绪。"""
-    try:
-        import perfetto.trace_processor  # noqa: F401
-    except ImportError:
-        return False
-    return shell_path() is not None
+    return missing_dependency() is None
 
 
 @contextmanager

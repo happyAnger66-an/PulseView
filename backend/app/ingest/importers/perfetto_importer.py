@@ -65,10 +65,10 @@ def _tables() -> list[TableDef]:
 
 def _require_available() -> None:
     """Trace Processor 不可用时抛出明确安装提示。"""
-    if not perfetto_tp.is_available():
+    reason = perfetto_tp.missing_dependency()
+    if reason is not None:
         raise RuntimeError(
-            "Perfetto 解析依赖未就绪：需 `pip install perfetto` 且可用 trace_processor_shell"
-            "（用环境变量 PULSEVIEW_TP_SHELL 指定，或放入 PATH）。详见 docs/support_perfetto.md。"
+            f"Perfetto 解析依赖未就绪：{reason}。详见 docs/support_perfetto.md。"
         )
 
 

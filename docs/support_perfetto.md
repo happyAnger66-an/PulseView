@@ -293,15 +293,29 @@ flowchart TB
 - 测试夹具用 Chrome JSON（Trace Processor 归一化为同一套 `slice`/`track` 表，与原生 protobuf 解析路径一致），避免生成 `.pftrace` 所需的 protobuf 6.x 与项目运行时 5.x 冲突。
 - track 名优先「进程/线程」，回退 `track.name`；仅取 `dur > 0` 的区间；时间归一到 trace 起点纳秒。
 
-**依赖安装**：
+**依赖安装**（两项缺一不可）：
+
+| 依赖 | 作用 | 安装 / 检查 |
+|------|------|-------------|
+| Python 包 `perfetto` | 启动 Trace Processor 子进程、执行 SQL | `cd PulseView/backend && .venv/bin/pip install -r requirements.txt` |
+| 二进制 `trace_processor_shell` | 实际解析 trace | `which trace_processor_shell` 或设置 `PULSEVIEW_TP_SHELL` |
 
 ```bash
 cd PulseView/backend
-.venv/bin/pip install perfetto                 # Python 库
-# trace_processor_shell：apt 安装或从 https://get.perfetto.dev/trace_processor 获取
-which trace_processor_shell                     # 确认在 PATH，或设 PULSEVIEW_TP_SHELL
-.venv/bin/python -c "from app.ingest import perfetto_tp; print(perfetto_tp.is_available())"
+.venv/bin/pip install perfetto          # 或 pip install -r requirements.txt
+which trace_processor_shell             # 已有则跳过；否则见下
+# 离线安装 shell: curl -LO https://get.perfetto.dev/trace_processor && chmod +x trace_processor
+# export PULSEVIEW_TP_SHELL=/path/to/trace_processor
+
+# 诊断（须用虚拟环境 Python，不要用系统 python3）
+.venv/bin/python -c "
+from app.ingest import perfetto_tp
+print('missing:', perfetto_tp.missing_dependency() or 'OK')
+print('shell:', perfetto_tp.shell_path())
+"
 ```
+
+**常见误报**：只安装了 `trace_processor_shell`，但后端用系统 `python3 run.py` 启动、未装 `perfetto` 包 → 会提示「依赖未就绪」。请始终用 `.venv/bin/python run.py` 或先 `source .venv/bin/activate`。
 
 ### 阶段 2：多数据类型
 

@@ -14,6 +14,17 @@ python run.py
 
 API: http://localhost:8080
 
+### Perfetto 数据源（可选）
+
+除 `pip install perfetto` 外，还需系统中有 `trace_processor_shell`（`which trace_processor_shell`）。诊断：
+
+```bash
+source .venv/bin/activate
+python -c "from app.ingest import perfetto_tp; print(perfetto_tp.missing_dependency() or 'OK')"
+```
+
+详见 `docs/support_perfetto.md`。
+
 ## Features
 
 - **ros2_mcap** datasource: scan MCAP topics, ingest `SystemStats` into DuckDB

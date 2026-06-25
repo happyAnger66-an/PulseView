@@ -25,6 +25,17 @@ app.add_middleware(
 )
 
 
+@app.on_event("startup")
+def _log_perfetto_status() -> None:
+    from app.ingest import perfetto_tp
+
+    dep = perfetto_tp.missing_dependency()
+    if dep:
+        print(f"[pulseview] perfetto: {dep}")
+    else:
+        print(f"[pulseview] perfetto: ready (shell={perfetto_tp.shell_path()})")
+
+
 def ok(data: Any = None) -> ApiResponse:
     """包装 API 成功响应为统一格式 ``{dat, err}``。
 
