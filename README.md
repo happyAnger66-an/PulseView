@@ -13,21 +13,22 @@ SQLite 数据源走 PromQL 查询入口，适合兼容已有时序库。
 - 插件化扩展：后端 `FormatImporter`，前端 `PLUGINS` / `VizRegistry`
 - ROS2 消息扩展：MCAP 内部通过 `RosMsgAdapter` 展平新消息类型
 
-## 数据源
+## 支持的数据类型
 
-| plugin_type | 名称 | 输入 | 查询能力 | 默认图表 |
-|-------------|------|------|----------|----------|
-| `ros2_mcap` | ROS2 MCAP | MCAP 文件 + Topic + Msg 类型 | SQL | 时序图 / 表格 |
-| `protobuf` | Protobuf | length-delimited `.pb` + 消息类型 | SQL | 时序图 / 表格 |
-| `ctf` | CTF Trace | CTF trace 目录 | SQL | Timeline / 表格 |
-| `perfetto` | Perfetto Trace | `.perfetto-trace` / `.pftrace` / Chrome JSON 等 | SQL | Timeline / 表格 |
-| `sqlite` | SQLite | SQLite 文件路径 | PromQL | 时序图 |
+| plugin_type | 名称 | 输入 | 查询 | 默认图表 | 操作指南 |
+|-------------|------|------|------|----------|----------|
+| `ros2_mcap` | ROS2 MCAP | MCAP 文件 + Topic + Msg 类型 | SQL | 时序图 / 表格 | [ros2_mcap.md](docs/datasources/ros2_mcap.md) |
+| `protobuf` | Protobuf | length-delimited `.pb` + 消息类型 | SQL | 时序图 / 表格 | [protobuf.md](docs/datasources/protobuf.md) |
+| `ctf` | CTF Trace | CTF trace 目录 | SQL | Timeline / 表格 | [ctf.md](docs/datasources/ctf.md) |
+| `perfetto` | Perfetto Trace | `.perfetto-trace` / `.pftrace` / Chrome JSON 等 | SQL | Timeline / 表格 | [perfetto.md](docs/datasources/perfetto.md) |
+| `sqlite` | SQLite | SQLite 文件路径 | PromQL | 时序图 | [sqlite.md](docs/datasources/sqlite.md) |
 
 说明：
 
-- `ros2_mcap` / `protobuf` / `ctf` / `perfetto` 会导入 DuckDB。
-- `ctf` 支持内置最小 CTF 与真实 LTTng / `ros2 trace`。真实 LTTng 读取需 `bt2`。
-- `perfetto` 依赖 Perfetto Trace Processor，详见 [docs/support_perfetto.md](docs/support_perfetto.md)。
+- `ros2_mcap` / `protobuf` / `ctf` / `perfetto` 保存后会自动 **ingest** 到 DuckDB（`backend/data/duckdb/{id}.duckdb`）。
+- `sqlite` 不经过 ingest，直接 PromQL 查询。
+- 各类型详细步骤（添加数据源、配置项、SQL 示例、依赖与排错）见上表 **操作指南** 列。
+- 架构与扩展设计见 [docs/design.md](docs/design.md)；LTTng 原理见 [docs/ros2_tracing.md](docs/ros2_tracing.md)；Perfetto 实现细节见 [docs/support_perfetto.md](docs/support_perfetto.md)。
 
 ## 图表类型
 
@@ -95,18 +96,11 @@ USE_MOCK=true npm run dev
 
 ## 使用流程
 
-1. 启动后端和前端。
-2. 进入“数据源管理”，添加数据源：
-   - ROS2 MCAP：填写 MCAP 路径、Topic、Msg 类型。
-   - Protobuf：填写 `.pb` 路径，扫描并选择消息类型。
-   - CTF Trace：填写 trace 目录并扫描。
-   - Perfetto Trace：填写 trace 文件并扫描。
-   - SQLite：填写 SQLite 文件路径。
-3. 保存后，具备 `ingest` 能力的数据源会自动导入 DuckDB。
-4. 进入“数据探索”，选择数据源：
-   - DuckDB 类数据源：查看 Schema、点击字段生成 SQL、或使用预设查询。
-   - SQLite：输入 PromQL 查询。
-5. 查询结果会自动选择图表：时序数据用折线图，span 数据用 Timeline，其它结果用表格。
+1. 启动后端和前端（见 [快速启动](#快速启动)）。
+2. 在 [支持的数据类型](#支持的数据类型) 表中选择格式，打开对应 **操作指南** 文档。
+3. 进入「数据源管理」添加数据源并保存（DuckDB 类会自动 ingest）。
+4. 进入「数据探索」：DuckDB 类用 SQL + Schema 树；SQLite 用 PromQL。
+5. 查询结果按元数据自动选择时序图、Timeline 或表格。
 
 ## 主要 API
 
@@ -131,8 +125,9 @@ USE_MOCK=true npm run dev
 ## 架构与扩展
 
 推荐先看：
-注：需要安装 draw.io插件查阅
-- [docs/pulseview_architecture.drawio](docs/pulseview_architecture.drawio)：draw.io 架构图
+
+- [docs/datasources/](docs/datasources/)：各数据类型操作指南（添加数据源、查询、排错）
+- [docs/pulseview_architecture.drawio](docs/pulseview_architecture.drawio)：draw.io 架构图（需 draw.io 插件）
 - [docs/architecture.md](docs/architecture.md)：类图与端到端流程图
 - [docs/design.md](docs/design.md)：多格式扩展设计
 - [docs/add_new_format.md](docs/add_new_format.md)：新增数据格式
