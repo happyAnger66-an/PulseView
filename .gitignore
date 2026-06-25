@@ -69,3 +69,15 @@ e2e/playwright/.cache/
 node_modules/
 test-results/
 test2/
+# Misc
+*.local
+.cache/
+tmp/
+temp/
+
+# Perfetto: ignore full upstream tree; keep PulseView/examples/perfetto demo only
+/perfetto/
+/vendor/perfetto/
+examples/perfetto/sdk/
+examples/perfetto/*.pftrace
+examples/perfetto/*.perfetto-trace

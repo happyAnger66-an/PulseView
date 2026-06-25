@@ -420,3 +420,20 @@ Track Event 在导入时会处理 **字符串 interning**（描述符只发一�
 | ProtoZero 序列化 | `perfetto/docs/design-docs/protozero.md` |
 | TraceBuffer 内部 | `perfetto/docs/design-docs/trace-buffer.md` |
 | Trace Processor 分析 | `perfetto/docs/analysis/trace-processor.md` |
+
+## 七、可运行示例
+
+`PulseView/examples/perfetto/` 提供最小 Track Event 示例（CMake + in-process tracing）：
+
+```bash
+cd PulseView/examples/perfetto
+
+# 若缺少 SDK（sdk/perfetto.h）
+./fetch_sdk.sh
+
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+./build/pulseview_perfetto_example
+```
+
+默认输出 `pulseview_example.pftrace`，可在 [ui.perfetto.dev](https://ui.perfetto.dev) 打开。
