@@ -2,6 +2,8 @@
 
 将 ROS 2 录制的 MCAP 文件导入 DuckDB，用 SQL 查询并自动绘制时序图或表格。
 
+![ros2 mcap systemstats](../../img/ros2_mcap_systemstats.png)
+
 ## 适用场景
 
 - 车辆/机器人日志中的 ROS 2 bag（MCAP 格式）
